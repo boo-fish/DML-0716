@@ -7,7 +7,7 @@ import numpy as np
 from torchvision import datasets, transforms
 import torch
 import time
-from network_environment import NetworkEnvironment
+from utils.network_environment import NetworkEnvironment
 from utils.sampling_benchmark import mnist_iid
 from utils.options import args_parser
 from models.Update_benchmark import LocalUpdate
@@ -17,7 +17,7 @@ from models.test import test_img
 import math
 import pickle
 import torch.multiprocessing as mp  # 导入多进程模块，用于并行训练
-from dml_确定节点流量分配 import GetFlow
+from utils.get_offload_dict_dml import GetFlow
 
 def client_train(args, dataset, idxs, w_glob, client_data_size, worker_capacity, client_id):
     """客户端训练函数，考虑客户端容量"""

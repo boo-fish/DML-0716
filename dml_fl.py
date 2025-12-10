@@ -9,7 +9,7 @@ import numpy as np
 from torchvision import datasets, transforms
 import torch
 import time
-from dml_确定节点流量分配 import GetFlow
+from utils.get_offload_dict_dml import GetFlow
 from utils.sampling_dml import mnist_iid, mnist_noniid_dirichlet
 from utils.options import args_parser
 from models.Update_dml import LocalUpdate

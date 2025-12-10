@@ -3,8 +3,8 @@ import pickle
 from graph_builder import GraphBuilder
 from network_environment import NetworkEnvironment
 from utils.options import args_parser
-from total_size import get_client_dataset_sizes
-from benchmark_cost import LocalTraining
+# from utils.get_total_MB_of_dataset import get_client_dataset_sizes
+from others.benchmark_cost import LocalTraining
 
 
 def convert_numpy_int_to_python(d):
@@ -36,7 +36,7 @@ def GetFlow(p=None, ai=None):
         num_workers = args.num_users
         num_clients = args.num_users
 
-        get_client_dataset_sizes()
+        # get_client_dataset_sizes()
 
         # 修改：初始化Ai_actdata列表（内存中维护）
         ai_actdata = []

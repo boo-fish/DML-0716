@@ -21,7 +21,7 @@ lr = args.lr
 epoch_value = args.epochs
 
 # 创建保存图片的目录
-save_dir = 'saving/0918/2d-iid'
+save_dir = '../saving/0918/2d-iid'
 os.makedirs(save_dir, exist_ok=True)
 
 # 加载数据
@@ -43,13 +43,13 @@ os.makedirs(save_dir, exist_ok=True)
 # with open('saving/0918/基准方法/Ai_6_P_5_epoch_50_is_iid_True_local_alpha_0.3.pkl', 'rb') as f:
 #     local_data_4 = pickle.load(f)
 
-with open('saving/0918/本文方法/Ai_6_P_10_epoch_50_is_iid_False_DML_alpha_0.3.pkl', 'rb') as f:
+with open('../saving/0918/本文方法/Ai_6_P_10_epoch_50_is_iid_False_DML_alpha_0.3.pkl', 'rb') as f:
     dml_data_1 = pickle.load(f)
-with open('saving/0918/本文方法/Ai_6_P_5_epoch_50_is_iid_False_DML_alpha_0.3.pkl', 'rb') as f:
+with open('../saving/0918/本文方法/Ai_6_P_5_epoch_50_is_iid_False_DML_alpha_0.3.pkl', 'rb') as f:
     dml_data_2 = pickle.load(f)
-with open('saving/0918/基准方法/Ai_6_P_10_epoch_50_is_iid_False_local_alpha_0.3.pkl', 'rb') as f:
+with open('../saving/0918/基准方法/Ai_6_P_10_epoch_50_is_iid_False_local_alpha_0.3.pkl', 'rb') as f:
     local_data_3 = pickle.load(f)
-with open('saving/0918/基准方法/Ai_6_P_5_epoch_50_is_iid_False_local_alpha_0.3.pkl', 'rb') as f:
+with open('../saving/0918/基准方法/Ai_6_P_5_epoch_50_is_iid_False_local_alpha_0.3.pkl', 'rb') as f:
     local_data_4 = pickle.load(f)
 
 # 确保Ai数量一致

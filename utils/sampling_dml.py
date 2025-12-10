@@ -2,7 +2,7 @@ import numpy as np
 import pickle
 import logging
 from collections import defaultdict
-from util import visualize_dirichlet_distribution
+from others.view_noiid分布 import visualize_dirichlet_distribution
 
 def perform_offloading(dataset, dict_users, offloading_data, max_attempts=1000):
     """
