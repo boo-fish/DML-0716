@@ -21,27 +21,27 @@ lr = args.lr
 epoch_value = args.epochs
 
 # 创建保存图片的目录
-save_dir = 'saving/combined_results'
+save_dir = '../saving/combined_results'
 os.makedirs(save_dir, exist_ok=True)
 
 # 加载数据 - IID
-with open('saving/iid-lr-0.001/Ai_6_P_10_epoch_50_is_iid_True_DML.pkl', 'rb') as f:
+with open('../saving/iid-lr-0.001/Ai_6_P_10_epoch_50_is_iid_True_DML.pkl', 'rb') as f:
     iid_dml_data_1 = pickle.load(f)
-with open('saving/iid-lr-0.001/Ai_6_P_5_epoch_50_is_iid_True_DML.pkl', 'rb') as f:
+with open('../saving/iid-lr-0.001/Ai_6_P_5_epoch_50_is_iid_True_DML.pkl', 'rb') as f:
     iid_dml_data_2 = pickle.load(f)
-with open('saving/iid-lr-0.001/Ai_6_P_10_epoch_50_is_iid_True_Local.pkl', 'rb') as f:
+with open('../saving/iid-lr-0.001/Ai_6_P_10_epoch_50_is_iid_True_Local.pkl', 'rb') as f:
     iid_local_data_3 = pickle.load(f)
-with open('saving/iid-lr-0.001/Ai_6_P_5_epoch_50_is_iid_True_Local.pkl', 'rb') as f:
+with open('../saving/iid-lr-0.001/Ai_6_P_5_epoch_50_is_iid_True_Local.pkl', 'rb') as f:
     iid_local_data_4 = pickle.load(f)
 
 # 加载数据 - non-IID
-with open('saving/noniid-lr-0.001/Ai_6_P_10_epoch_50_is_iid_False_DML.pkl', 'rb') as f:
+with open('../saving/noniid-lr-0.001/Ai_6_P_10_epoch_50_is_iid_False_DML.pkl', 'rb') as f:
     noniid_dml_data_1 = pickle.load(f)
-with open('saving/noniid-lr-0.001/Ai_6_P_5_epoch_50_is_iid_False_DML.pkl', 'rb') as f:
+with open('../saving/noniid-lr-0.001/Ai_6_P_5_epoch_50_is_iid_False_DML.pkl', 'rb') as f:
     noniid_dml_data_2 = pickle.load(f)
-with open('saving/noniid-lr-0.001/Ai_6_P_10_epoch_50_is_iid_False_Local.pkl', 'rb') as f:
+with open('../saving/noniid-lr-0.001/Ai_6_P_10_epoch_50_is_iid_False_Local.pkl', 'rb') as f:
     noniid_local_data_3 = pickle.load(f)
-with open('saving/noniid-lr-0.001/Ai_6_P_5_epoch_50_is_iid_False_Local.pkl', 'rb') as f:
+with open('../saving/noniid-lr-0.001/Ai_6_P_5_epoch_50_is_iid_False_Local.pkl', 'rb') as f:
     noniid_local_data_4 = pickle.load(f)
 
 # 确保Ai数量一致

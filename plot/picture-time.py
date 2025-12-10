@@ -23,17 +23,17 @@ epoch_value = args.epochs
 TARGET_ACCURACY = 92
 
 # 创建保存图片的目录
-save_dir = 'saving/time/plot'
+save_dir = '../saving/time/plot'
 os.makedirs(save_dir, exist_ok=True)
 
 # 加载数据
-with open('saving/time/Ai_6_P_10_epoch_100_is_iid_True_DML_alpha_0.3.pkl', 'rb') as f:
+with open('../saving/time/Ai_6_P_10_epoch_100_is_iid_True_DML_alpha_0.3.pkl', 'rb') as f:
     dml_data_1 = pickle.load(f)
-with open('saving/time/Ai_6_P_10_epoch_100_is_iid_False_DML_alpha_0.3.pkl', 'rb') as f:
+with open('../saving/time/Ai_6_P_10_epoch_100_is_iid_False_DML_alpha_0.3.pkl', 'rb') as f:
     dml_data_2 = pickle.load(f)
-with open('saving/time/Ai_6_P_10_epoch_100_is_iid_True_Local_alpha_0.3.pkl', 'rb') as f:
+with open('../saving/time/Ai_6_P_10_epoch_100_is_iid_True_local_alpha_0.3.pkl', 'rb') as f:
     local_data_3 = pickle.load(f)
-with open('saving/time/Ai_6_P_10_epoch_100_is_iid_False_Local_alpha_0.3.pkl', 'rb') as f:
+with open('../saving/time/Ai_6_P_10_epoch_100_is_iid_False_local_alpha_0.3.pkl', 'rb') as f:
     local_data_4 = pickle.load(f)
 
 # 确保Ai数量一致
@@ -58,24 +58,21 @@ def calculate_cumulative_time(times):
     return cumulative
 
 
-# 截断数据到目标准确率的函数，并返回达到目标的累计时间
+# 截断数据到目标准确率的函数
 def truncate_to_target(times, accuracies, target):
-    """截断数据，只保留达到目标准确率之前（包括达到时）的数据点，
-    并返回达到目标准确率时的累计时间（如果达到的话）"""
+    """截断数据，只保留达到目标准确率之前（包括达到时）的数据点"""
     truncated_times = []
     truncated_accs = []
-    target_time = None
 
     for t, acc in zip(times, accuracies):
         truncated_times.append(t)
         truncated_accs.append(acc)
 
-        # 如果达到或超过目标准确率，记录时间并停止添加更多数据点
-        if acc >= target and target_time is None:
-            target_time = t
+        # 如果达到或超过目标准确率，停止添加更多数据点
+        if acc >= target:
             break
 
-    return truncated_times, truncated_accs, target_time
+    return truncated_times, truncated_accs
 
 
 # 自定义颜色
@@ -83,8 +80,6 @@ custom_colors = ['#1515ff', '#ff7f50', '#ff0000', '#04bdfb']
 
 # 为每个Ai绘制曲线图
 for ai_idx in range(num_ais):
-    print(f"\n===== Ai {ai_idx} 达到目标准确率({TARGET_ACCURACY}%)的累计时间 =====")
-
     # 提取并计算累计时间
     dml_times_1 = calculate_cumulative_time(dml_data_1['global_round_times'][ai_idx])
     dml_times_2 = calculate_cumulative_time(dml_data_2['global_round_times'][ai_idx])
@@ -97,20 +92,11 @@ for ai_idx in range(num_ais):
     local_accuracies_3 = [convert_to_python(v) for v in local_data_3['global_round_accuracies'][ai_idx]]
     local_accuracies_4 = [convert_to_python(v) for v in local_data_4['global_round_accuracies'][ai_idx]]
 
-    # 截断数据到目标准确率，并获取达到目标的时间
-    dml_times_1, dml_accuracies_1, dml_time_1 = truncate_to_target(dml_times_1, dml_accuracies_1, TARGET_ACCURACY)
-    dml_times_2, dml_accuracies_2, dml_time_2 = truncate_to_target(dml_times_2, dml_accuracies_2, TARGET_ACCURACY)
-    local_times_3, local_accuracies_3, local_time_3 = truncate_to_target(local_times_3, local_accuracies_3,
-                                                                         TARGET_ACCURACY)
-    local_times_4, local_accuracies_4, local_time_4 = truncate_to_target(local_times_4, local_accuracies_4,
-                                                                         TARGET_ACCURACY)
-
-    # 输出每条曲线达到目标准确率的累计时间
-    print(f"Proposed (IID): {dml_time_1:.4f} 秒" if dml_time_1 is not None else "Proposed (IID): 未达到目标准确率")
-    print(
-        f"Proposed (non-IID): {dml_time_2:.4f} 秒" if dml_time_2 is not None else "Proposed (non-IID): 未达到目标准确率")
-    print(f"FedL (IID): {local_time_3:.4f} 秒" if local_time_3 is not None else "FedL (IID): 未达到目标准确率")
-    print(f"FedL (non-IID): {local_time_4:.4f} 秒" if local_time_4 is not None else "FedL (non-IID): 未达到目标准确率")
+    # 截断数据到目标准确率
+    dml_times_1, dml_accuracies_1 = truncate_to_target(dml_times_1, dml_accuracies_1, TARGET_ACCURACY)
+    dml_times_2, dml_accuracies_2 = truncate_to_target(dml_times_2, dml_accuracies_2, TARGET_ACCURACY)
+    local_times_3, local_accuracies_3 = truncate_to_target(local_times_3, local_accuracies_3, TARGET_ACCURACY)
+    local_times_4, local_accuracies_4 = truncate_to_target(local_times_4, local_accuracies_4, TARGET_ACCURACY)
 
     # 创建数据框
     data = pd.DataFrame({
@@ -118,8 +104,8 @@ for ai_idx in range(num_ais):
         'Accuracy': dml_accuracies_1 + dml_accuracies_2 + local_accuracies_3 + local_accuracies_4,
         'Model': ['Proposed (IID)'] * len(dml_times_1)
                  + ['Proposed (non-IID)'] * len(dml_times_2)
-                 + ['FedL (IID)'] * len(local_times_3)
-                 + ['FedL (non-IID)'] * len(local_times_4)
+                 + ['Conventional FL Approach (IID)'] * len(local_times_3)
+                 + ['Conventional FL Approach (non-IID)'] * len(local_times_4)
     })
 
     # 绘制曲线图
@@ -162,7 +148,7 @@ for ai_idx in range(num_ais):
 
     # 保存图片
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    save_path = os.path.join(save_dir, f'time_Ai_{ai_idx}_lr_{lr}_{current_time}.pdf')
+    save_path = os.path.join(save_dir, f'con-time_Ai_{ai_idx}_lr_{lr}_{current_time}.pdf')
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     print(f"图片已保存至: {save_path}")
 

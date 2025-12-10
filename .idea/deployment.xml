@@ -10,6 +10,34 @@
           </mappings>
         </serverdata>
       </paths>
+      <paths name="sunziwei@10.122.7.170:22 password (2)">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="sunziwei@10.122.7.170:22 password (3)">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="sunziwei@10.122.7.170:22 password (4)">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="tyx">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
       <paths name="tyx@10.119.5.232:22 password">
         <serverdata>
           <mappings>
@@ -20,11 +48,18 @@
       <paths name="tyx@10.119.5.232:22 password (2)">
         <serverdata>
           <mappings>
-            <mapping deploy="/data/tyx/ach/DML-v2" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/data/tyx/ach/DML-FGCS-revise" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
       <paths name="tyx@10.119.5.232:22 password (3)">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="tyx@10.119.5.232:22 password (5)">
         <serverdata>
           <mappings>
             <mapping local="$PROJECT_DIR$" web="/" />

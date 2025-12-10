@@ -7,7 +7,7 @@ import os
 from datetime import datetime
 
 # 创建保存图片的目录
-save_dir = 'saving/3d_acc'
+save_dir = '../saving/3d_acc'
 os.makedirs(save_dir, exist_ok=True)
 
 # 原始数据
