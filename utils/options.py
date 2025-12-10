@@ -46,5 +46,8 @@ def args_parser():
     parser.add_argument('--ai', type=int, default=2, help='ai value')
     parser.add_argument('--alpha', type=float, default=0.3, help='alpha value')
 
+
+    parser.add_argument('--total_mb', type=float, default=179, help='the MB of dataset, minist:179')
+
     args = parser.parse_args()
     return args

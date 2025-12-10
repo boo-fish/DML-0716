@@ -23,29 +23,26 @@ def convert_numpy_int_to_python(d):
 
 def GetFlow(p=None, ai=None):
     try:
-        # 打开文件（如果不存在则创建）
-        with open('Ai_actdata.pkl', 'r+b') as f:
-            # 清空文件内容
-            f.truncate(0)
+
 
         # 设置相同的随机数种子
         np.random.seed(423)
 
         args = args_parser()
         num_servers = 10
-
-        # Ai 范围为 2 到 24 中的偶数
         Ai_range = np.arange(ai, ai + 1)
-
-        # 倍数p
-        # Ai_range = np.arange(2, 7)
-        # alpha = 0.4
         alpha = 0.007
         num_simulations = 1
         num_workers = args.num_users
         num_clients = args.num_users
 
         get_client_dataset_sizes()
+
+        # 修改：初始化Ai_actdata列表（内存中维护）
+        ai_actdata = []
+        worker_capacity = None  # 初始化变量
+        training_data = None  # 初始化变量
+
 
         for Ai in Ai_range:
 
@@ -56,18 +53,26 @@ def GetFlow(p=None, ai=None):
                                          (5, 5 * p), (30, 60),
                                          (Ai, Ai + 1), alpha).get_network()
 
-                # 保存工人节点容量到文件
-                with open('worker_capacity.pkl', 'wb') as f:
-                    pickle.dump(env['worker_capacity'], f)
+
+                # 移除：不再保存worker_capacity到pkl
+                # with open('worker_capacity.pkl', 'wb') as f:
+                #     pickle.dump(env['worker_capacity'], f)
+                worker_capacity = env['worker_capacity']  # 内存中存储
 
                 # 打印每个工人节点的初始容量
                 print(f"工人节点数量: {num_workers}, 模拟次数: {sim}")
                 for i in range(num_workers):
                     print(f"工作节点 {i} 初始容量: {env['worker_capacity'][i]}")
 
+
                 # Proposed方法
                 solver = GraphBuilder(env, Ai)
-                throughput_feasible, cost_feasible, cost_efficiency_feasible, worker_training_cost = solver.solve(print_training_data=True)
+                # 修改：接收完整返回值
+                throughput_feasible, cost_feasible, cost_efficiency_feasible, worker_training_cost, ai_actdata_sub, training_data = solver.solve(print_training_data=True)
+                # =========修复：打印ai_actdata_sub长度，确认是1==========
+                # print(f"[DEBUG] ai_actdata_sub长度: {len(ai_actdata_sub)}")  # 应输出1
+                ai_actdata.extend(ai_actdata_sub)  # 聚合Ai_actdata
+
                 print(f"worker_training_cost: {worker_training_cost}")
                 print(f"total_cost: {cost_feasible}")
                 offloading_data = solver.offloading_dict
@@ -79,6 +84,8 @@ def GetFlow(p=None, ai=None):
                 total_offloaded_data = sum(sum(targets.values()) for targets in offloading_data.values())
                 print("总卸载数据量：", total_offloaded_data)
 
+
+
                 # # Local Training方法
                 local_training = LocalTraining(env, Ai)
                 _, local_cost, _,training_cost,total_tidu,total_sync_cost = local_training.run_local_training()
@@ -87,15 +94,16 @@ def GetFlow(p=None, ai=None):
                 print(f"benchmark_total_cost: {local_cost}")
                 print(f"benchmark_total_tidu: {total_tidu}")
 
-        return offloading_data
+        # 修改：返回4个值（原offloading_data + 新增的worker_capacity/ai_actdata/training_data）
+        return offloading_data, worker_capacity, ai_actdata, training_data
 
     except Exception as e:
         print(f"An error occurred: {e}")
-        return None  # 确保在发生异常时返回None，而不是让程序崩溃
+        return None, None, None, None  # 异常时返回全None
 
 
 
-if __name__ == "__main__":
-    p=3
-    ai=6
-    GetFlow(p=p, ai=ai)
+# if __name__ == "__main__":
+    # p=3
+    # ai=6
+    # GetFlow(p=p, ai=ai)

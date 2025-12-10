@@ -14,7 +14,7 @@ class GraphBuilder:
         self.env = environment
         self.Ai = Ai
         self.graph = None
-        self.Ai_actdata = []
+        self.Ai_actdata = []  # 内存中存储Ai和训练数据量，不再写文件
         self.offloading_dict = {}  # 存储工人节点卸载信息
 
     def build_graph(self, is_feasible=True):
@@ -97,22 +97,27 @@ class GraphBuilder:
                     cost_per_unit = self.env['training_cost'][i]
                     worker_training_cost += flow * cost_per_unit
 
+            training_data = None
             if print_training_data:
-                # 打印每个工人节点最终训练的数据量
-                self.print_worker_training_data(flow_dict)
+                # 打印每个工人节点最终训练的数据量（修改：接收返回值）
+                training_data = self.print_worker_training_data(flow_dict)
 
             training_sizes = self.get_worker_training_sizes(flow_dict)
             self.Ai_actdata.append([self.Ai, training_sizes])
-            self.save_Ai_actdata()
+
+
+
+
+            # 移除save_Ai_actdata调用（不再保存文件）
 
             # 生成并存储卸载字典
             self.offloading_dict = self.get_worker_offloading_dict(flow_dict)
 
-            return total_throughput, total_cost, cost_efficiency, worker_training_cost
+            # 修改：追加返回Ai_actdata和training_data
+            return total_throughput, total_cost, cost_efficiency, worker_training_cost, self.Ai_actdata, training_data
 
         except nx.NetworkXUnfeasible as e:
             print(f"可行情况抛出异常，失败。具体错误信息: {str(e)}")
-            # 当抛出异常时，调用 run_algorithm 方法并返回结果
             return self.run_algorithm(print_training_data=True)
 
     def build_residual_graph(self, G):
@@ -207,7 +212,6 @@ class GraphBuilder:
                 cost_per_unit = data['weight']
                 server_to_sink_cost += flow * cost_per_unit
 
-        # total_cost = total_cost - server_to_sink_cost
 
 
         # 计算从 worker_i 到 worker_i_result 的流量总和作为不可行情况下的吞吐量
@@ -229,19 +233,20 @@ class GraphBuilder:
                 cost_per_unit = self.env['training_cost'][i]
                 worker_training_cost += flow * cost_per_unit
 
-
+        training_data = None
         if print_training_data:
-            # 打印每个工人节点最终训练的数据量
-            self.print_worker_training_data(flow_dict)
+            # 打印每个工人节点最终训练的数据量（修改：接收返回值）
+            training_data = self.print_worker_training_data(flow_dict)
 
         training_sizes = self.get_worker_training_sizes(flow_dict)
         self.Ai_actdata.append([self.Ai, training_sizes])
-        self.save_Ai_actdata()
+        # 移除save_Ai_actdata调用（不再保存文件）
 
         # 生成并存储卸载字典
         self.offloading_dict = self.get_worker_offloading_dict(flow_dict)
 
-        return total_throughput, total_cost, cost_efficiency, worker_training_cost  # 返回路径选择字典
+        # 修改：追加返回Ai_actdata和training_data
+        return total_throughput, total_cost, cost_efficiency, worker_training_cost, self.Ai_actdata, training_data
 
     def print_offloading_info(self, flow_dict):
         for i in range(self.env['num_workers']):
@@ -272,6 +277,7 @@ class GraphBuilder:
         return path_selection
 
     def print_worker_training_data(self, flow_dict):
+        # 修改：移除pickle保存，改为return数据
         training_data = {}
         for i in range(self.env['num_workers']):
             worker_node = f"worker_{i}"
@@ -282,12 +288,10 @@ class GraphBuilder:
             else:
                 training_data[i] = 0
                 print(f"工人节点 {i} 最终训练的数据量: 0 兆")
-
-        # 将训练数据量保存到文件中
-        with open('worker_training_data.pkl', 'wb') as f:
-            pickle.dump(training_data, f)
-
-        return training_data
+        # 移除以下代码：不再保存到worker_training_data.pkl
+        # with open('worker_training_data.pkl', 'wb') as f:
+        #     pickle.dump(training_data, f)
+        return training_data  # 修改：返回training_data
 
     def get_worker_training_sizes(self, flow_dict):
         training_sizes = []
@@ -301,16 +305,7 @@ class GraphBuilder:
                 training_sizes.append(0)
         return training_sizes
 
-    def save_Ai_actdata(self):
-        try:
-            with open('Ai_actdata.pkl', 'rb') as f:
-                existing_data = pickle.load(f)
-                self.Ai_actdata = existing_data + self.Ai_actdata
-        except (FileNotFoundError, EOFError):
-            pass
 
-        with open('Ai_actdata.pkl', 'wb') as f:
-            pickle.dump(self.Ai_actdata, f)
 
     def get_worker_offloading_dict(self, flow_dict=None):
         """

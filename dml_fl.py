@@ -8,7 +8,7 @@ import copy
 import numpy as np
 from torchvision import datasets, transforms
 import torch
-import time  # 导入 time 模块
+import time
 from dml_确定节点流量分配 import GetFlow
 from utils.sampling_dml import mnist_iid, mnist_noniid_dirichlet
 from utils.options import args_parser
@@ -16,11 +16,20 @@ from models.Update_dml import LocalUpdate
 from models.Nets import MLP, CNNMnist, CNNCifar
 from models.Fed import FedAvg
 from models.test import test_img
-# from util import  visualize_dirichlet_distribution
 import math
 import pickle
 from multiprocessing import Pool
 import torch.multiprocessing as mp  # 导入多进程模块，用于并行训练
+from datetime import datetime
+
+# 获取当前时间
+now = datetime.now()
+
+# 按所需格式转换为字符串
+formatted_time = now.strftime("%Y-%m-%d-%H-%M-%S")
+
+
+
 
 def get_size_in_mb(state_dict_list):
     total_size = 0
@@ -59,14 +68,18 @@ def main():
     p_value = args.p
     ai = args.ai
     alpha = args.alpha
-    offloading_data = GetFlow(p=p_value,ai=ai)
-    print("main中的卸载字典",offloading_data)
+    total_size = args.total_mb
+
+
+    # 修改：调用GetFlow并接收4个返回值
+    offloading_data, worker_capacity, Ai_actdata, training_data = GetFlow(p=p_value, ai=ai)
+    print("main中的卸载字典", offloading_data)
+    print("main中Ai的len", len(Ai_actdata))
+    print("main中Ai", Ai_actdata)
+
 
     args.device = torch.device('cuda:{}'.format(args.gpu) if torch.cuda.is_available() and args.gpu != -1 else 'cpu')
 
-    # 加载 Ai_actdata.pkl 文件
-    with open('Ai_actdata.pkl', 'rb') as f:
-        Ai_actdata = pickle.load(f)
 
     # 存储测试集准确率
     test_accuracies = []
@@ -75,7 +88,7 @@ def main():
     # 存储每个 Ai 下的全局轮次训练时间
     global_round_times = []
 
-    # 使用 Ai_actdata.pkl 文件中列表元素的个数，进行限定循环轮数
+    # 使用Ai_actdata列表元素的个数，进行限定循环轮数
     for round_idx, (Ai, training_sizes) in enumerate(Ai_actdata):
         # load dataset and split users
         if args.dataset == 'mnist':
@@ -87,13 +100,17 @@ def main():
                 print("iid")
                 print(f"args.iid:{args.iid}")
                 # 将 round_idx 传递给 mnist_iid 函数
-                dict_users = mnist_iid(dataset_train, args.num_users, round_idx,offloading_data)
+                # =========关键修改：传递Ai_actdata和total_size参数==========
+                dict_users = mnist_iid(dataset_train, args.num_users, round_idx,offloading_data,
+                          Ai_actdata=Ai_actdata, total_size=total_size)
 
             else:
                 print("non iid")
                 print(f"args.iid:{args.iid}")
                 # Dirichlet分布实现Non-IID  alpha控制 non-IID 程度
-                dict_users = mnist_noniid_dirichlet(dataset_train, args.num_users, round_idx, offloading_data,alpha=alpha)
+                # =========关键修改：传递Ai_actdata和total_size参数==========
+                dict_users = mnist_noniid_dirichlet(dataset_train, args.num_users, round_idx, offloading_data,alpha=alpha,
+                          Ai_actdata=Ai_actdata, total_size=total_size)
                 # visualize_dirichlet_distribution(dataset_train, dict_users,10,args.num_users)
 
         img_size = dataset_train[0][0].shape
@@ -126,9 +143,7 @@ def main():
         for client_idx, client_idxs in dict_users.items():
             client_dataset_sizes[client_idx] = math.floor(len(client_idxs) * (sample_size + label_size))
 
-        # 从 worker_capacity.pkl 文件中读取每个客户端的计算容量
-        with open('worker_capacity.pkl', 'rb') as f:
-            worker_capacity = pickle.load(f)
+
 
         # 全局训练轮次
         accuracies_per_round = []
@@ -193,10 +208,10 @@ def main():
         test_accuracies.append(accuracies_per_round[-1])
 
     # 构造保存路径
-    save_dir = 'saving/0918/本文方法'
+    save_dir = 'results/DML'
     os.makedirs(save_dir, exist_ok=True)  # 如果不存在则创建
     # 构造文件名（注意添加 save_dir 前缀）
-    filename = os.path.join(save_dir,f'Ai_{Ai}_P_{p_value}_epoch_{epoch_value}_is_iid_{args.iid}_DML_alpha_{alpha}.pkl')
+    filename = os.path.join(save_dir,f'Ai_{Ai}_P_{p_value}_epoch_{epoch_value}_is_iid_{args.iid}_DML_alpha_{alpha}_{formatted_time}.pkl')
     # 保存数据
     data_to_save = {
         'ais': [x[0] for x in Ai_actdata],
@@ -208,7 +223,10 @@ def main():
         pickle.dump(data_to_save, f)
     print("成功保存数据pkl文件")
 
+    return data_to_save
+
 if __name__ == "__main__":
     mp.set_start_method('spawn')  # 设置多进程启动方式
-    main()
+    final_results = main()  # 接收返回的结果
+    print("训练完成，最终结果：", final_results)
 

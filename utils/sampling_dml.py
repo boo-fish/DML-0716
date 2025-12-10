@@ -211,20 +211,41 @@ def perform_offloading(dataset, dict_users, offloading_data, max_attempts=1000):
 #     return new_dict_users
 
 
-def mnist_iid(dataset, num_users, round_idx, offloading_data):
+def mnist_iid(dataset, num_users, round_idx, offloading_data, Ai_actdata=None, total_size=None):
+    """
+    修改说明：
+    1. 新增Ai_actdata参数（从main函数传递，不再从pkl加载）
+    2. 新增total_size参数（从main函数传递，不再从pkl加载）
+    3. 增加索引边界检查，避免IndexError
+    """
     try:
-        # 加载 Ai_actdata.pkl 文件
-        with open('Ai_actdata.pkl', 'rb') as f:
-            Ai_actdata = pickle.load(f)
+        # =========关键修改1：移除从文件加载Ai_actdata的逻辑==========
+        # with open('Ai_actdata.pkl', 'rb') as f:
+        #     Ai_actdata = pickle.load(f)
 
-        # 获取当前循环的 Ai 和训练数据量
-        Ai, training_sizes = Ai_actdata[round_idx]
+        # =========关键修改2：增加索引边界检查==========
+        if Ai_actdata is None or round_idx >= len(Ai_actdata):
+            logging.warning(f"Ai_actdata为空或round_idx({round_idx})超出范围，使用默认值")
+            # 给默认值避免报错
+            Ai = 6  # 与GetFlow默认ai值一致
+            training_sizes = [0] * num_users
+        else:
+            # 获取当前循环的 Ai 和训练数据量
+            Ai, training_sizes = Ai_actdata[round_idx]
+
+
+
+
 
         print(Ai, training_sizes)
 
-        # 从文件中读取total_size
-        with open('./total_size.pkl', 'rb') as f:
-            total_size = pickle.load(f)
+        # =========关键修改3：移除从文件加载total_size的逻辑，优先使用传入的参数==========
+        # with open('./total_size.pkl', 'rb') as f:
+        #     total_size = pickle.load(f)
+        if total_size is None:
+            logging.warning("total_size未传递，使用默认值179（原total_size.pkl的默认值）")
+            total_size = 179  # 原total_size.pkl的默认值，可根据实际情况调整
+
 
         # 计算每个客户端应获得的样本数
         num_items = {i: (Ai * int(len(dataset) / total_size)) for i in range(num_users)}
@@ -256,8 +277,13 @@ def mnist_iid(dataset, num_users, round_idx, offloading_data):
 
 
 # =========基于 Dirichlet 分布的 MNIST Non-IID划分方法==============
-def mnist_noniid_dirichlet(dataset, num_users, round_idx, offloading_data, alpha=0.5):
+def mnist_noniid_dirichlet(dataset, num_users, round_idx, offloading_data, alpha=0.5, Ai_actdata=None, total_size=None):
     """
+    修改说明：
+    1. 新增Ai_actdata参数（从main函数传递，不再从pkl加载）
+    2. 新增total_size参数（从main函数传递，不再从pkl加载）
+    3. 增加索引边界检查，避免IndexError
+
     基于 Dirichlet 分布的 MNIST 非IID划分方法
     参数：
     - dataset: MNIST 训练集对象，需有 dataset.train_labels
@@ -269,13 +295,24 @@ def mnist_noniid_dirichlet(dataset, num_users, round_idx, offloading_data, alpha
     """
 
     try:
-        with open('Ai_actdata.pkl', 'rb') as f:
-            Ai_actdata = pickle.load(f)
-        Ai, training_sizes = Ai_actdata[round_idx]
+        # =========关键修改1：移除从文件加载Ai_actdata的逻辑==========
+        # with open('Ai_actdata.pkl', 'rb') as f:
+        #     Ai_actdata = pickle.load(f)
 
-        with open('./total_size.pkl', 'rb') as f:
-            # 总m数，179m
-            total_size = pickle.load(f)
+        # =========关键修改2：增加索引边界检查==========
+        if Ai_actdata is None or round_idx >= len(Ai_actdata):
+            logging.warning(f"Ai_actdata为空或round_idx({round_idx})超出范围，使用默认值")
+            Ai = 6  # 与GetFlow默认ai值一致
+            training_sizes = [0] * num_users
+        else:
+            Ai, training_sizes = Ai_actdata[round_idx]
+
+        # =========关键修改3：移除从文件加载total_size的逻辑，优先使用传入的参数==========
+        # with open('./total_size.pkl', 'rb') as f:
+        #     total_size = pickle.load(f)
+        if total_size is None:
+            logging.warning("total_size未传递，使用默认值179（原total_size.pkl的默认值）")
+            total_size = 179  # 原total_size.pkl的默认值，可根据实际情况调整
 
         samples_of_1m = len(dataset) / total_size
         print("[INFO] 1M对应样本数:", samples_of_1m)
