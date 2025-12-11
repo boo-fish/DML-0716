@@ -1,7 +1,7 @@
 import numpy as np
 import pickle
-from graph_builder import GraphBuilder
-from network_environment import NetworkEnvironment
+from utils.graph_builder import GraphBuilder
+from utils.network_environment import NetworkEnvironment
 from utils.options import args_parser
 # from utils.get_total_MB_of_dataset import get_client_dataset_sizes
 from others.benchmark_cost import LocalTraining

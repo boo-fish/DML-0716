@@ -18,6 +18,7 @@ import math
 import pickle
 import torch.multiprocessing as mp  # 导入多进程模块，用于并行训练
 from utils.get_offload_dict_dml import GetFlow
+import itertools  # 新增：用于生成设备子集
 
 def client_train(args, dataset, idxs, w_glob, client_data_size, worker_capacity, client_id):
     """客户端训练函数，考虑客户端容量"""

@@ -3,24 +3,37 @@ import numpy as np
 from torchvision import datasets, transforms
 import pickle
 import logging
-def mnist_iid(dataset, num_users, round_idx):
+def mnist_iid(dataset, num_users, round_idx, Ai_actdata=None, total_size=None):
+
     try:
-        # 加载 Ai_actdata.pkl 文件
-        with open('Ai_actdata.pkl', 'rb') as f:
-            Ai_actdata = pickle.load(f)
+        # =========关键修改1：移除从文件加载Ai_actdata的逻辑==========
+        # with open('Ai_actdata.pkl', 'rb') as f:
+        #     Ai_actdata = pickle.load(f)
 
-        # 从文件中读取工人节点容量
-        with open('./worker_capacity.pkl','rb') as f:
 
-            worker_capacity = pickle.load(f)
+        # =========关键修改2：增加索引边界检查==========
+        if Ai_actdata is None or round_idx >= len(Ai_actdata):
+            logging.warning(f"Ai_actdata为空或round_idx({round_idx})超出范围，使用默认值")
+            # 给默认值避免报错
+            Ai = 6  # 与GetFlow默认ai值一致
+            training_sizes = [0] * num_users
 
-        # 获取当前循环的 Ai 和训练数据量
-        Ai, training_sizes = Ai_actdata[round_idx]
+        else:
+            # 获取当前循环的 Ai 和训练数据量
+            Ai, training_sizes = Ai_actdata[round_idx]
 
-        # 从文件中读取total_size
-        with open('./total_size.pkl', 'rb') as f:
 
-            total_size = pickle.load(f)
+
+        print(Ai, training_sizes)
+
+
+        # =========关键修改3：移除从文件加载total_size的逻辑，优先使用传入的参数==========
+        # with open('./total_size.pkl', 'rb') as f:
+        #     total_size = pickle.load(f)
+        if total_size is None:
+            logging.warning("total_size未传递，使用默认值179（原total_size.pkl的默认值）")
+            total_size = 179  # 原total_size.pkl的默认值，可根据实际情况调整
+
 
         # 计算每个客户端的数据集大小，不超过 Ai 和客户端容量
         num_items = {i: (Ai * int(len(dataset) / total_size))for i in range(num_users)}
@@ -43,6 +56,8 @@ def mnist_iid(dataset, num_users, round_idx):
         for i in range(num_users):
             dict_users[i] = set(np.random.choice(all_idxs, num_items[i], replace=False))
             all_idxs = list(set(all_idxs) - dict_users[i])
+            print(f"客户端{i}分配到的数据数量:{len(dict_users[i])}")
+
         return dict_users
 
 
@@ -66,7 +81,7 @@ def calculate_sample_size():
 
 
 # =========基于 Dirichlet 分布的 MNIST Non-IID划分方法==============
-def mnist_noniid_dirichlet(dataset, num_users, round_idx, alpha=0.5):
+def mnist_noniid_dirichlet(dataset, num_users, round_idx, alpha=0.5, Ai_actdata=None, total_size=None):
     """
     基于 Dirichlet 分布的 MNIST 非IID划分方法
     参数：
@@ -79,12 +94,26 @@ def mnist_noniid_dirichlet(dataset, num_users, round_idx, alpha=0.5):
     """
 
     try:
-        with open('Ai_actdata.pkl', 'rb') as f:
-            Ai_actdata = pickle.load(f)
-        Ai, training_sizes = Ai_actdata[round_idx]
+        # =========关键修改1：移除从文件加载Ai_actdata的逻辑==========
+        # with open('Ai_actdata.pkl', 'rb') as f:
+        #     Ai_actdata = pickle.load(f)
 
-        with open('./total_size.pkl', 'rb') as f:
-            total_size = pickle.load(f)
+        # =========关键修改2：增加索引边界检查==========
+        if Ai_actdata is None or round_idx >= len(Ai_actdata):
+            logging.warning(f"Ai_actdata为空或round_idx({round_idx})超出范围，使用默认值")
+            Ai = 6  # 与GetFlow默认ai值一致
+            training_sizes = [0] * num_users
+        else:
+            Ai, training_sizes = Ai_actdata[round_idx]
+
+        # =========关键修改3：移除从文件加载total_size的逻辑，优先使用传入的参数==========
+        # with open('./total_size.pkl', 'rb') as f:
+        #     total_size = pickle.load(f)
+        if total_size is None:
+            logging.warning("total_size未传递，使用默认值179（原total_size.pkl的默认值）")
+            total_size = 179  # 原total_size.pkl的默认值，可根据实际情况调整
+
+
 
         # 计算每个客户端应获得的样本数
         num_samples = {i: (Ai * int(len(dataset) / total_size)) for i in range(num_users)}
@@ -126,5 +155,6 @@ def mnist_noniid_dirichlet(dataset, num_users, round_idx, alpha=0.5):
         if len(user_idx) > num_samples[i]:
             user_idx = np.random.choice(user_idx, num_samples[i], replace=False)
         dict_users[i] = set(user_idx)
+        print(f"客户端{i}分配到的数据数量:{len(dict_users[i])}")
 
     return dict_users

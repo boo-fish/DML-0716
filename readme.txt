@@ -5,6 +5,6 @@ python3 dml_fl.py --dataset mnist  --num_channels 1 --model cnn --epochs 2 --gpu
 这里的alpha是非独立同分布程度系数，和算吞吐量，成本效率的缩放比α不是一个东西
 
 这是传统联邦学习基准方法的命令行
-python3 dml_fl_benchmark.py --dataset mnist  --num_channels 1 --model cnn --epochs 10 --gpu 1 --p 10 --ai 6 --alpha 0.3
+python3 dml_fl_benchmark.py --dataset mnist  --num_channels 1 --model cnn --epochs 2 --gpu 1 --p 10 --ai 6 --alpha 0.3
 
 命令行中带iid表示为独立同分布，不带iid的表示为非独立同分布
