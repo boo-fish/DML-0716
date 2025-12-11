@@ -1,6 +1,6 @@
 import matplotlib
 import os
-from utils.sampling_benchmark import mnist_noniid_dirichlet
+from utils.sampling_CADIB import mnist_noniid_dirichlet
 matplotlib.use('TkAgg')
 import copy
 import numpy as np
@@ -8,7 +8,7 @@ from torchvision import datasets, transforms
 import torch
 import time
 from utils.network_environment import NetworkEnvironment
-from utils.sampling_benchmark import mnist_iid
+from utils.sampling_CADIB import mnist_iid
 from utils.options import args_parser
 from models.Update_benchmark import LocalUpdate
 from models.Nets import MLP, CNNMnist, CNNCifar
@@ -17,8 +17,15 @@ from models.test import test_img
 import math
 import pickle
 import torch.multiprocessing as mp  # 导入多进程模块，用于并行训练
-from utils.get_offload_dict_dml import GetFlow
+from utils.get_info_for_CADIB import GetFlow
 import itertools  # 新增：用于生成设备子集
+from datetime import datetime
+
+# 获取当前时间
+now = datetime.now()
+
+# 按所需格式转换为字符串
+formatted_time = now.strftime("%Y-%m-%d-%H-%M-%S")
 
 def client_train(args, dataset, idxs, w_glob, client_data_size, worker_capacity, client_id):
     """客户端训练函数，考虑客户端容量"""
@@ -84,11 +91,16 @@ def main():
     epoch_value = args.epochs
     total_size = args.total_mb
 
-    # 修改：调用GetFlow并接收4个返回值
-    offloading_data, worker_capacity, Ai_actdata, training_data = GetFlow(p=p_value, ai=ai)
-    print("main中的卸载字典", offloading_data)
-    print("main中Ai的len", len(Ai_actdata))
-    print("main中Ai", Ai_actdata)
+    # 修改：接收链路容量（用于计算信道容量）
+    offloading_data, worker_capacity, Ai_actdata, training_data, link_capacity_i_k = GetFlow(p=p_value, ai=ai)
+    # print("main中的卸载字典", offloading_data)
+    # print("main中Ai的len", len(Ai_actdata))
+    # print("main中Ai", Ai_actdata)
+    # print("main中link_capacity_i_k_0", link_capacity_i_k[0])
+    # print("main中link_capacity_i_k_1", link_capacity_i_k[1])
+    # print("main中link_capacity_i_k_all", link_capacity_i_k)
+
+
 
 
     args.device = torch.device('cuda:{}'.format(args.gpu) if torch.cuda.is_available() and args.gpu != -1 else 'cpu')
@@ -151,7 +163,6 @@ def main():
         w_glob = net_glob.state_dict()
 
         if args.all_clients:
-            # print("Aggregation over all clients")
             w_locals = [w_glob for i in range(args.num_users)]
 
         client_dataset_sizes = {}
@@ -168,13 +179,52 @@ def main():
             global_start_time = time.time()
             w_locals = []
             loss_locals = []
-            m = max(int(args.frac * args.num_users), 1)
-            idxs_users = np.random.choice(range(args.num_users), m, replace=False)
 
-            with mp.Pool(processes=m) as pool:  # 使用 with 语句确保资源正确释放
+            # ========== 新增：信道感知+标签方差的设备选择逻辑 ==========
+            # 1. 候选设备集合K(t)：所有10个工人
+            K_t = list(range(args.num_users))
+            # 2. 计算每个工人的信道容量（取到服务器的链路容量最大值->修改为之和）
+            channel_capacities = [link_capacity_i_k[i].sum() for i in K_t]
+            # 3. 按信道容量降序排序，取前5个组成候选集Π'(t)
+            sorted_workers = sorted(zip(K_t, channel_capacities), key=lambda x: x[1], reverse=True)
+            pi_prime = [worker for worker, cap in sorted_workers[:5]]
+            # print(f"[Init] 基于信道选中的{len(pi_prime)}个工人：{pi_prime}")
+            # 4. 获取候选集设备的标签分布
+            omega = args.num_classes  # mnist为10类
+            labels = dataset_train.train_labels.numpy() if hasattr(dataset_train,
+                                                                   'train_labels') else dataset_train.train_targets.numpy()
+            label_counts = {}
+            for k in pi_prime:
+                user_idxs = list(dict_users[k])
+                user_labels = labels[user_idxs]
+                counts = np.bincount(user_labels, minlength=omega)  # 统计每个标签的样本数
+                label_counts[k] = counts
+            # 5. 生成所有4个设备的子集，选标签方差最小的
+            # print("开始从Π'(t)中基于信道感知和数据重要性调度来选择最优的Π(t)集合（R=4）")
+            best_subset = None
+            min_omega = float('inf')
+            for subset in itertools.combinations(pi_prime, 4):
+                sum_b = np.zeros(omega)
+                for k in subset:
+                    sum_b += label_counts[k]
+                b_bar = (1 / omega) * sum_b.sum()  # 平均标签数
+                current_omega = np.sum((sum_b - b_bar) ** 2)  # 计算标签方差
+                if current_omega < min_omega:
+                    min_omega = current_omega
+                    best_subset = subset
+            #
+            # print(f"[Finish] 本次选中了{len(list(best_subset))}个工人：{list(best_subset)}")
+
+            idxs_users = list(best_subset)
+            # ========== 设备选择逻辑结束 ==========
+
+
+            with mp.Pool(processes=len(idxs_users)) as pool:  # 按选中的设备数设置进程数
                 results = pool.starmap(client_train, [(args, dataset_train, dict_users[idx], w_glob,
                                                        client_dataset_sizes[idx], worker_capacity, idx)
                                                       for idx in idxs_users])
+
+
 
             # 存储每个客户端的处理时间
             client_processing_times = {}
@@ -220,10 +270,10 @@ def main():
         test_accuracies.append(accuracies_per_round[-1])
 
     # 构造保存路径
-    save_dir = 'results/benchmark'
+    save_dir = 'results/CADIB'
     os.makedirs(save_dir, exist_ok=True)  # 如果不存在则创建
     # 构造文件名（注意添加 save_dir 前缀）
-    filename = os.path.join(save_dir,f'Ai_{Ai}_P_{p_value}_epoch_{epoch_value}_is_iid_{args.iid}_local_alpha_{alpha}.pkl')
+    filename = os.path.join(save_dir,f'Ai_{Ai}_P_{p_value}_epoch_{epoch_value}_is_iid_{args.iid}_local_alpha_{alpha}_Final_Acc_{accuracies_per_round[-1]:.4f}_{formatted_time}.pkl')
     # 保存数据
     data_to_save = {
         'ais': [x[0] for x in Ai_actdata],
@@ -233,8 +283,12 @@ def main():
     }
     with open(filename, 'wb') as f:
         pickle.dump(data_to_save, f)
+    print("成功保存数据pkl文件")
+
+    return data_to_save
 
 
 if __name__ == "__main__":
     mp.set_start_method('spawn')  # 设置多进程启动方式
-    main()
+    final_results = main()  # 接收返回的结果
+    print("训练完成，最终结果：", final_results)

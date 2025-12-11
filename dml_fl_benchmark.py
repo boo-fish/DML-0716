@@ -18,6 +18,13 @@ import math
 import pickle
 import torch.multiprocessing as mp  # 导入多进程模块，用于并行训练
 from utils.get_offload_dict_dml import GetFlow
+from datetime import datetime
+
+# 获取当前时间
+now = datetime.now()
+
+# 按所需格式转换为字符串
+formatted_time = now.strftime("%Y-%m-%d-%H-%M-%S")
 
 def client_train(args, dataset, idxs, w_glob, client_data_size, worker_capacity, client_id):
     """客户端训练函数，考虑客户端容量"""
@@ -222,7 +229,8 @@ def main():
     save_dir = 'results/benchmark'
     os.makedirs(save_dir, exist_ok=True)  # 如果不存在则创建
     # 构造文件名（注意添加 save_dir 前缀）
-    filename = os.path.join(save_dir,f'Ai_{Ai}_P_{p_value}_epoch_{epoch_value}_is_iid_{args.iid}_local_alpha_{alpha}.pkl')
+    filename = os.path.join(save_dir, f'Ai_{Ai}_P_{p_value}_epoch_{epoch_value}_is_iid_{args.iid}_local_alpha_{alpha}_Final_Acc_{accuracies_per_round[-1]:.4f}_{formatted_time}.pkl')
+
     # 保存数据
     data_to_save = {
         'ais': [x[0] for x in Ai_actdata],
@@ -232,8 +240,12 @@ def main():
     }
     with open(filename, 'wb') as f:
         pickle.dump(data_to_save, f)
+    print("成功保存数据pkl文件")
+
+    return data_to_save
 
 
 if __name__ == "__main__":
     mp.set_start_method('spawn')  # 设置多进程启动方式
-    main()
+    final_results = main()  # 接收返回的结果
+    print("训练完成，最终结果：", final_results)

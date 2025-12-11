@@ -3,152 +3,98 @@ import numpy as np
 from torchvision import datasets, transforms
 import pickle
 import logging
+
+
 def mnist_iid(dataset, num_users, round_idx, Ai_actdata=None, total_size=None):
-
     try:
-        # =========关键修改1：移除从文件加载Ai_actdata的逻辑==========
-        # with open('Ai_actdata.pkl', 'rb') as f:
-        #     Ai_actdata = pickle.load(f)
-
-
-        # =========关键修改2：增加索引边界检查==========
         if Ai_actdata is None or round_idx >= len(Ai_actdata):
             logging.warning(f"Ai_actdata为空或round_idx({round_idx})超出范围，使用默认值")
-            # 给默认值避免报错
-            Ai = 6  # 与GetFlow默认ai值一致
+            Ai = 6
             training_sizes = [0] * num_users
-
         else:
-            # 获取当前循环的 Ai 和训练数据量
             Ai, training_sizes = Ai_actdata[round_idx]
-
-
 
         print(Ai, training_sizes)
 
-
-        # =========关键修改3：移除从文件加载total_size的逻辑，优先使用传入的参数==========
-        # with open('./total_size.pkl', 'rb') as f:
-        #     total_size = pickle.load(f)
         if total_size is None:
-            logging.warning("total_size未传递，使用默认值179（原total_size.pkl的默认值）")
-            total_size = 179  # 原total_size.pkl的默认值，可根据实际情况调整
+            logging.warning("total_size未传递，使用默认值179")
+            total_size = 179
 
-
-        # 计算每个客户端的数据集大小，不超过 Ai 和客户端容量
+        # 计算每个客户端的数据集大小（Ai=15兆）
         num_items = {i: (Ai * int(len(dataset) / total_size))for i in range(num_users)}
         print(num_items)
 
         dict_users, all_idxs = {}, [i for i in range(len(dataset))]
         for i in range(num_users):
             if total_size > len(dataset):
-                logging.warning("根据 Ai 计算的总数据量超过了数据集总大小，将进行调整==============================================================")
-
+                logging.warning("根据 Ai 计算的总数据量超过了数据集总大小，将进行调整")
             dict_users[i] = set(np.random.choice(all_idxs, num_items[i], replace=False))
             all_idxs = list(set(all_idxs) - dict_users[i])
             print(f"客户端{i}分配到的数据数量:{len(dict_users[i])}")
 
+
         return dict_users
     except FileNotFoundError as e:
         logging.error(f"文件未找到: {e}. 使用默认数据划分方法。")
-        # 如果文件缺失，使用默认的IID划分方法
         num_items = int(len(dataset) / num_users)
         dict_users, all_idxs = {}, [i for i in range(len(dataset))]
         for i in range(num_users):
             dict_users[i] = set(np.random.choice(all_idxs, num_items[i], replace=False))
             all_idxs = list(set(all_idxs) - dict_users[i])
-
         return dict_users
 
 
 def calculate_sample_size():
     """计算MNIST数据集中单个样本的存储大小（图像+标签）"""
-    # 加载MNIST数据集
     train_dataset = datasets.MNIST(
         root='./data', train=True, download=True,
         transform=transforms.ToTensor()
     )
-
-    # 获取一个样本
     img, label = train_dataset[0]
-
-    # 计算样本大小（图像和标签）
     img_size = img.numpy().nbytes
     label_size = np.array(label).nbytes
-
-    # 返回单个样本的总大小（字节）
     return img_size + label_size
 
 
-# =========基于 Dirichlet 分布的 MNIST Non-IID划分方法==============
 def mnist_noniid_dirichlet(dataset, num_users, round_idx, alpha=0.5, Ai_actdata=None, total_size=None):
-    """
-    基于 Dirichlet 分布的 MNIST 非IID划分方法
-    参数：
-    - dataset: MNIST 训练集对象，需有 dataset.train_labels
-    - num_users: 客户端数量
-    - round_idx: 当前轮数，用于获取 Ai_actdata
-    - alpha: Dirichlet 分布的参数（控制非IID程度，越小越不均匀）
-    返回：
-    - dict_users: dict[int, set[int]]，每个客户端分配到的样本索引集合
-    """
-
     try:
-        # =========关键修改1：移除从文件加载Ai_actdata的逻辑==========
-        # with open('Ai_actdata.pkl', 'rb') as f:
-        #     Ai_actdata = pickle.load(f)
-
-        # =========关键修改2：增加索引边界检查==========
         if Ai_actdata is None or round_idx >= len(Ai_actdata):
             logging.warning(f"Ai_actdata为空或round_idx({round_idx})超出范围，使用默认值")
-            Ai = 6  # 与GetFlow默认ai值一致
+            Ai = 6
             training_sizes = [0] * num_users
         else:
             Ai, training_sizes = Ai_actdata[round_idx]
 
-        # =========关键修改3：移除从文件加载total_size的逻辑，优先使用传入的参数==========
-        # with open('./total_size.pkl', 'rb') as f:
-        #     total_size = pickle.load(f)
         if total_size is None:
-            logging.warning("total_size未传递，使用默认值179（原total_size.pkl的默认值）")
-            total_size = 179  # 原total_size.pkl的默认值，可根据实际情况调整
+            logging.warning("total_size未传递，使用默认值179")
+            total_size = 179
 
-
-
-        # 计算每个客户端应获得的样本数
+        # 计算每个客户端应获得的样本数（Ai=15兆）
         num_samples = {i: (Ai * int(len(dataset) / total_size)) for i in range(num_users)}
     except FileNotFoundError as e:
         logging.error(f"文件未找到: {e}. 使用默认均匀划分方式。")
         total_len = len(dataset)
         num_samples = {i: int(total_len / num_users) for i in range(num_users)}
 
-    labels = dataset.train_labels.numpy()
+    # 兼容train_labels/train_targets
+    labels = dataset.train_labels.numpy() if hasattr(dataset, 'train_labels') else dataset.train_targets.numpy()
     num_classes = len(np.unique(labels))
     class_indices = [np.where(labels == y)[0] for y in range(num_classes)]
 
-    # 为每个类生成 Dirichlet 分布用于用户分配比例
     client_indices = defaultdict(list)
     for c in range(num_classes):
         idx_c = class_indices[c]
         np.random.shuffle(idx_c)
-
-        # 为这个类别在不同客户端上的分布生成一个 Dirichlet 向量
         proportions = np.random.dirichlet([alpha] * num_users)
-
-        # 乘以样本总量并四舍五入得到分配样本数量
         proportions = np.array([int(p * len(idx_c)) for p in proportions])
-
-        # 修正总和偏差
         diff = len(idx_c) - np.sum(proportions)
         for i in range(abs(diff)):
             proportions[i % num_users] += 1 if diff > 0 else -1
-
         start = 0
         for i in range(num_users):
             client_indices[i].extend(idx_c[start:start + proportions[i]])
             start += proportions[i]
 
-    # 最后从每个客户端中根据其“所需样本量”进行下采样
     dict_users = {}
     for i in range(num_users):
         user_idx = client_indices[i]
