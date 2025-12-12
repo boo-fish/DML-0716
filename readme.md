@@ -15,6 +15,7 @@ python3 dml_fl_benchmark.py --dataset mnist  --num_channels 1 --model cnn --epoc
 
 
 
+CADIB方法 已作废
 python3 dml_fl_CADIB.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 15 --alpha 0.3
 python3 dml_fl_CADIB.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 15 --alpha 0.3 --iid
 
