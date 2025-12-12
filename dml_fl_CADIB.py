@@ -174,58 +174,57 @@ def main():
         # 全局训练轮次
         accuracies_per_round = []
         times_per_round = []
+
+        # ========== 新增：信道感知+标签方差的设备选择逻辑 ==========
+        # 1. 候选设备集合K(t)：所有10个工人
+        K_t = list(range(args.num_users))
+        # 2. 计算每个工人的信道容量（取到服务器的链路容量最大值->修改为之和）
+        channel_capacities = [link_capacity_i_k[i].sum() for i in K_t]
+        # 3. 按信道容量降序排序，取前5个组成候选集Π'(t)
+        sorted_workers = sorted(zip(K_t, channel_capacities), key=lambda x: x[1], reverse=True)
+        pi_prime = [worker for worker, cap in sorted_workers[:8]]
+        # print(f"[Init] 基于信道选中的{len(pi_prime)}个工人：{pi_prime}")
+        # 4. 获取候选集设备的标签分布
+        omega = args.num_classes  # mnist为10类
+        labels = dataset_train.train_labels.numpy() if hasattr(dataset_train,
+                                                               'train_labels') else dataset_train.train_targets.numpy()
+        label_counts = {}
+        for k in pi_prime:
+            user_idxs = list(dict_users[k])
+            user_labels = labels[user_idxs]
+            counts = np.bincount(user_labels, minlength=omega)  # 统计每个标签的样本数
+            label_counts[k] = counts
+        # 5. 生成所有4个设备的子集，选标签方差最小的
+        # print("开始从Π'(t)中基于信道感知和数据重要性调度来选择最优的Π(t)集合（R=4）")
+        best_subset = None
+        min_omega = float('inf')
+        for subset in itertools.combinations(pi_prime, 60 // ai):
+            sum_b = np.zeros(omega)
+            for k in subset:
+                sum_b += label_counts[k]
+            b_bar = (1 / omega) * sum_b.sum()  # 平均标签数
+            current_omega = np.sum((sum_b - b_bar) ** 2)  # 计算标签方差
+            if current_omega < min_omega:
+                min_omega = current_omega
+                best_subset = subset
+        #
+        # print(f"[Finish] 本次选中了{len(list(best_subset))}个工人：{list(best_subset)}")
+
+        idxs_users = list(best_subset)
+        # ========== 设备选择逻辑结束 ==========
+
+
         for epoch in range(args.epochs):
             # 记录全局训练开始时间
             global_start_time = time.time()
             w_locals = []
             loss_locals = []
 
-            # ========== 新增：信道感知+标签方差的设备选择逻辑 ==========
-            # 1. 候选设备集合K(t)：所有10个工人
-            K_t = list(range(args.num_users))
-            # 2. 计算每个工人的信道容量（取到服务器的链路容量最大值->修改为之和）
-            channel_capacities = [link_capacity_i_k[i].sum() for i in K_t]
-            # 3. 按信道容量降序排序，取前5个组成候选集Π'(t)
-            sorted_workers = sorted(zip(K_t, channel_capacities), key=lambda x: x[1], reverse=True)
-            pi_prime = [worker for worker, cap in sorted_workers[:5]]
-            # print(f"[Init] 基于信道选中的{len(pi_prime)}个工人：{pi_prime}")
-            # 4. 获取候选集设备的标签分布
-            omega = args.num_classes  # mnist为10类
-            labels = dataset_train.train_labels.numpy() if hasattr(dataset_train,
-                                                                   'train_labels') else dataset_train.train_targets.numpy()
-            label_counts = {}
-            for k in pi_prime:
-                user_idxs = list(dict_users[k])
-                user_labels = labels[user_idxs]
-                counts = np.bincount(user_labels, minlength=omega)  # 统计每个标签的样本数
-                label_counts[k] = counts
-            # 5. 生成所有4个设备的子集，选标签方差最小的
-            # print("开始从Π'(t)中基于信道感知和数据重要性调度来选择最优的Π(t)集合（R=4）")
-            best_subset = None
-            min_omega = float('inf')
-            for subset in itertools.combinations(pi_prime, 4):
-                sum_b = np.zeros(omega)
-                for k in subset:
-                    sum_b += label_counts[k]
-                b_bar = (1 / omega) * sum_b.sum()  # 平均标签数
-                current_omega = np.sum((sum_b - b_bar) ** 2)  # 计算标签方差
-                if current_omega < min_omega:
-                    min_omega = current_omega
-                    best_subset = subset
-            #
-            # print(f"[Finish] 本次选中了{len(list(best_subset))}个工人：{list(best_subset)}")
-
-            idxs_users = list(best_subset)
-            # ========== 设备选择逻辑结束 ==========
-
 
             with mp.Pool(processes=len(idxs_users)) as pool:  # 按选中的设备数设置进程数
                 results = pool.starmap(client_train, [(args, dataset_train, dict_users[idx], w_glob,
                                                        client_dataset_sizes[idx], worker_capacity, idx)
                                                       for idx in idxs_users])
-
-
-
             # 存储每个客户端的处理时间
             client_processing_times = {}
             for w, loss, elapsed_time, client_id in results:
