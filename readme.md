@@ -19,3 +19,8 @@ python3 dml_fl_CADIB.py --dataset mnist  --num_channels 1 --model cnn --epochs 5
 python3 dml_fl_CADIB.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 15 --alpha 0.3 --iid
 
 命令行中带iid表示为独立同分布，不带iid的表示为非独立同分布
+
+
+RAMFL 随机分配多服务器联邦学习方法
+python3 dml_fl_RAMFL.py --dataset mnist  --num_channels 1 --model cnn --epochs 7 --gpu 1 --p 10 --ai 6 --alpha 0.3
+python3 dml_fl_RAMFL.py --dataset mnist  --num_channels 1 --model cnn --epochs 7 --gpu 1 --p 10 --ai 6 --alpha 0.3 --iid
