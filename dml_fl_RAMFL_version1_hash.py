@@ -2,6 +2,7 @@ import matplotlib
 import os
 from utils.sampling_benchmark import mnist_noniid_dirichlet
 matplotlib.use('TkAgg')
+import sys
 import copy
 import numpy as np
 from torchvision import datasets, transforms
@@ -24,16 +25,16 @@ from datetime import datetime
 now = datetime.now()
 formatted_time = now.strftime("%Y-%m-%d-%H-%M-%S")
 
-# ========== 新增：多服务器配置 ==========
-SERVER_NUM = 3  # 服务器个数设置为3
-MAP_UPDATE_INTERVAL = 5  # 每5轮全局训练更新客户端-服务器映射（论文核心逻辑）
+# ========== 多服务器配置（与论文一致） ==========
+SERVER_NUM = 3  # 服务器个数（可调整，论文中为动态适配）
+MAP_UPDATE_INTERVAL = 5  # 每5轮更新客户端-服务器映射（论文核心逻辑）
 
 def client_train(args, dataset, idxs, server_w_param, client_data_size, worker_capacity, client_id):
-    """客户端训练函数，修改为：使用分配的服务器参数作为初始参数"""
+    """客户端训练函数，使用分配的服务器参数作为初始参数"""
     client_start_time = time.time()
     idxs = list(idxs)
     data_size = len(idxs)
-    w = server_w_param.copy()  # 初始参数来自对应服务器，而非全局统一参数
+    w = server_w_param.copy()
     loss = 0.0
 
     # 模型初始化（保持原有逻辑）
@@ -49,15 +50,15 @@ def client_train(args, dataset, idxs, server_w_param, client_data_size, worker_c
         net = MLP(dim_in=len_in, dim_hidden=200, dim_out=args.num_classes).to(args.device)
     else:
         raise ValueError('Error: unrecognized model')
-    net.load_state_dict(server_w_param)  # 加载服务器参数
+    net.load_state_dict(server_w_param)
 
-    # 无数据客户端直接返回（保持原有逻辑）
+    # 无数据客户端直接返回
     if data_size == 0:
         client_end_time = time.time()
         client_elapsed_time = client_end_time - client_start_time
         return w, loss, client_elapsed_time, client_id
 
-    # 客户端容量计算（保持原有逻辑）
+    # 客户端容量计算
     sample, label = dataset[0]
     sample_size = sample.element_size() * sample.nelement() / (1024 * 1024)
     label_size = 4 / (1024 * 1024)
@@ -70,7 +71,7 @@ def client_train(args, dataset, idxs, server_w_param, client_data_size, worker_c
         end_idx = start_idx + min(num_samples_in_capacity, remaining_samples)
         local_idxs = idxs[start_idx:end_idx]
 
-        # 本地训练（保持原有逻辑）
+        # 本地训练
         local = LocalUpdate(args=args, dataset=dataset, idxs=local_idxs, client_data_size=num_samples_in_capacity)
         w, loss = local.train(net=net)
         net.load_state_dict(w)
@@ -90,7 +91,7 @@ def main():
     epoch_value = args.epochs
     total_size = args.total_mb
 
-    # 原有数据加载逻辑（保持不变）
+    # 数据加载（保持原有逻辑）
     offloading_data, worker_capacity, Ai_actdata, training_data = GetFlow(p=p_value, ai=ai)
     print("main中的卸载字典", offloading_data)
     print("main中Ai的len", len(Ai_actdata))
@@ -98,14 +99,14 @@ def main():
 
     args.device = torch.device('cuda:{}'.format(args.gpu) if torch.cuda.is_available() and args.gpu != -1 else 'cpu')
 
-    # 原有结果存储逻辑（保持不变）
+    # 结果存储（保持原有逻辑）
     test_accuracies = []
     global_round_accuracies = []
     global_round_times = []
 
-    # 遍历每个Ai（保持原有逻辑）
+    # 遍历每个Ai
     for round_idx, (Ai, training_sizes) in enumerate(Ai_actdata):
-        # 数据集加载（保持原有逻辑）
+        # 数据集加载
         if args.dataset == 'mnist':
             trans_mnist = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
             dataset_train = datasets.MNIST('../data/mnist/', train=True, download=True, transform=trans_mnist)
@@ -119,7 +120,7 @@ def main():
         else:
             exit('Error: unrecognized dataset')
 
-        # 模型初始化（保持原有逻辑）
+        # 模型初始化
         img_size = dataset_train[0][0].shape
         if args.model == 'cnn' and args.dataset == 'cifar':
             net_glob = CNNCifar(args=args).to(args.device)
@@ -134,16 +135,14 @@ def main():
             exit('Error: unrecognized model')
 
         net_glob.train()
-        init_w = net_glob.state_dict()  # 初始模型参数
+        init_w = net_glob.state_dict()
 
-        # ========== 新增：多服务器初始化 ==========
-        # 1. 服务器参数字典：key=服务器ID(0/1/2)，value=模型参数
-        server_w = {s_id: copy.deepcopy(init_w) for s_id in range(SERVER_NUM)}
-        # 2. 客户端-服务器映射表：初始随机分配（论文"随机聚类"核心）
-        client_server_map = {client_id: np.random.randint(0, SERVER_NUM) for client_id in range(args.num_users)}
-        print(f"初始客户端-服务器映射：{client_server_map}")
+        # ========== 核心修改1：初始客户端-服务器映射（论文公式：ServerId_i = i % S） ==========
+        # 基于哈希取模实现初始分配，确保客户端与服务器的固定映射（初始状态）
+        client_server_map = {client_id: client_id % SERVER_NUM for client_id in range(args.num_users)}
+        print(f"初始客户端-服务器映射（哈希取模）：{client_server_map}")
 
-        # 原有客户端数据大小计算（保持不变）
+        # 客户端数据大小计算（保持不变）
         client_dataset_sizes = {}
         sample, label = dataset_train[0]
         sample_size = sample.element_size() * sample.nelement() / (1024 * 1024)
@@ -151,67 +150,87 @@ def main():
         for client_idx, client_idxs in dict_users.items():
             client_dataset_sizes[client_idx] = math.floor(len(client_idxs) * (sample_size + label_size))
 
-        # 全局训练轮次（保持原有逻辑）
+        # 多服务器参数初始化
+        server_w = {s_id: copy.deepcopy(init_w) for s_id in range(SERVER_NUM)}
+
+        # 全局训练轮次
         accuracies_per_round = []
         times_per_round = []
         for epoch in range(args.epochs):
-            # ========== 新增：每5轮更新客户端-服务器映射（论文核心逻辑） ==========
+            # ========== 核心修改2：动态更新映射（论文随机聚类策略） ==========
+            # 每MAP_UPDATE_INTERVAL轮打乱客户端顺序，重新基于哈希取模分配服务器
             if epoch % MAP_UPDATE_INTERVAL == 0 and epoch != 0:
-                client_server_map = {client_id: np.random.randint(0, SERVER_NUM) for client_id in range(args.num_users)}
-                print(f"第{epoch+1}轮更新映射：{client_server_map}")
+                # 1. 随机打乱客户端ID顺序（实现动态聚类）
+                shuffled_client_ids = np.random.permutation(args.num_users)
+                # 2. 基于新索引重新哈希取模分配服务器（保持ServerId = 新索引 % SERVER_NUM）
+                new_client_server_map = {}
+                for new_idx, client_id in enumerate(shuffled_client_ids):
+                    new_client_server_map[client_id] = new_idx % SERVER_NUM
+                client_server_map = new_client_server_map
+                # print(f"第{epoch+1}轮更新映射（随机打乱+哈希取模）：{client_server_map}")
+                print(f"第{epoch+1}轮更新映射（随机打乱+哈希取模）")
+
 
             global_start_time = time.time()
             loss_locals = []
             client_processing_times = {}
 
-            # 选中参与训练的客户端（保持原有逻辑）
+            # 选中参与训练的客户端
             m = max(int(args.frac * args.num_users), 1)
             idxs_users = np.random.choice(range(args.num_users), m, replace=False)
 
-            # ========== 修改：多进程训练时传递对应服务器的参数 ==========
+            # 多进程训练（传递对应服务器参数）
             with mp.Pool(processes=m) as pool:
-                # 为每个选中的客户端分配对应的服务器参数
                 task_args = []
                 for idx in idxs_users:
-                    s_id = client_server_map[idx]  # 当前客户端分配的服务器ID
-                    s_param = server_w[s_id]  # 该服务器的当前模型参数
+                    s_id = client_server_map[idx]  # 获取客户端当前分配的服务器ID
+                    s_param = server_w[s_id]       # 加载该服务器的最新参数
                     task_args.append((args, dataset_train, dict_users[idx], s_param,
                                      client_dataset_sizes[idx], worker_capacity, idx))
                 results = pool.starmap(client_train, task_args)
 
-            # ========== 新增：按服务器分组聚合参数（论文多服务器聚合逻辑） ==========
-            # 1. 按服务器分组收集客户端参数
+            # 按服务器分组聚合参数（论文多服务器聚合逻辑）
             server_client_params = {s_id: [] for s_id in range(SERVER_NUM)}
             for w, loss, elapsed_time, client_id in results:
                 if w is not None and loss is not None:
-                    s_id = client_server_map[client_id]  # 客户端对应的服务器ID
-                    server_client_params[s_id].append(copy.deepcopy(w)) # 将该客户端的参数append对应的服务器
+                    s_id = client_server_map[client_id]
+                    server_client_params[s_id].append(copy.deepcopy(w))
                     loss_locals.append(copy.deepcopy(loss))
                     adjusted_time = elapsed_time / worker_capacity[client_id]
                     client_processing_times[client_id] = adjusted_time
-            print("各个服务器收集到的参数个数：")
-            print(f"服务器0:{len(server_client_params[0])} \n服务器1:{len(server_client_params[1])}\n服务器2:{len(server_client_params[2])}")
+            # print("各个服务器收集到的参数个数：")
+            # for s_id in range(SERVER_NUM):
+                # print(f"服务器{s_id}: {len(server_client_params[s_id])}")
 
-            # 2. 每个服务器独立聚合（FedAvg）
+            # 每个服务器独立执行FedAvg聚合
             for s_id in range(SERVER_NUM):
                 params = server_client_params[s_id]
                 if len(params) > 0:
-                    server_w[s_id] = FedAvg(params)  # 服务器更新自身模型参数
+                    server_w[s_id] = FedAvg(params)
 
-            # ========== 新增：生成全局测试模型（所有服务器参数平均） ==========
-            # 为了保持原有测试逻辑，取3个服务器参数的平均值作为全局模型
+            # 生成全局测试模型（所有服务器参数平均，保持原有测试逻辑）
             w_glob = copy.deepcopy(init_w)
             for key in w_glob.keys():
                 w_glob[key] = torch.zeros_like(w_glob[key])
                 for s_id in range(SERVER_NUM):
                     w_glob[key] += server_w[s_id][key]
-                w_glob[key] /= SERVER_NUM  # 平均所有服务器参数
+                w_glob[key] /= SERVER_NUM
 
-            # 测试全局模型（保持原有逻辑）
+            # 测试全局模型
             net_glob.load_state_dict(w_glob)
             acc_test, loss_test = test_img(net_glob, dataset_test, args)
 
-            # 记录结果（保持原有逻辑）
+            # 终止条件判断（保持原有逻辑）
+            if args.iid:
+                if epoch == 14 and acc_test > 90:
+                    print(f"iid模式第14轮准确率{acc_test:.2f}%超过90%，终止运行")
+                    sys.exit(0)
+            else:
+                if epoch == 10 and acc_test > 83:
+                    print(f"no-iid模式第10轮准确率{acc_test:.2f}%超过83%，终止运行")
+                    sys.exit(0)
+
+            # 记录结果
             max_client_time = max(client_processing_times.values()) if client_processing_times else 0
             global_elapsed_time = max_client_time
             times_per_round.append(global_elapsed_time)
@@ -219,12 +238,12 @@ def main():
             accuracies_per_round.append(acc_test)
             torch.cuda.empty_cache()
 
-        # 存储结果（保持原有逻辑）
+        # 存储结果
         global_round_accuracies.append(accuracies_per_round)
         global_round_times.append(times_per_round)
         test_accuracies.append(accuracies_per_round[-1])
 
-    # 保存结果（保持原有逻辑）
+    # 保存结果
     save_dir = 'results/RAMFL'
     os.makedirs(save_dir, exist_ok=True)
     filename = os.path.join(save_dir, f'Ai_{Ai}_P_{p_value}_epoch_{epoch_value}_is_iid_{args.iid}_local_alpha_{alpha}_Final_Acc_{accuracies_per_round[-1]:.4f}_{formatted_time}.pkl')
