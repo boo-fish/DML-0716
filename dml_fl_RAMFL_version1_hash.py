@@ -221,14 +221,14 @@ def main():
             acc_test, loss_test = test_img(net_glob, dataset_test, args)
 
             # 终止条件判断（保持原有逻辑）
-            if args.iid:
-                if epoch == 14 and acc_test > 90:
-                    print(f"iid模式第14轮准确率{acc_test:.2f}%超过90%，终止运行")
-                    sys.exit(0)
-            else:
-                if epoch == 10 and acc_test > 83:
-                    print(f"no-iid模式第10轮准确率{acc_test:.2f}%超过83%，终止运行")
-                    sys.exit(0)
+            # if args.iid:
+            #     if epoch == 14 and acc_test > 90:
+            #         print(f"iid模式第14轮准确率{acc_test:.2f}%超过90%，终止运行")
+            #         sys.exit(0)
+            # else:
+            #     if epoch == 10 and acc_test > 83:
+            #         print(f"no-iid模式第10轮准确率{acc_test:.2f}%超过83%，终止运行")
+            #         sys.exit(0)
 
             # 记录结果
             max_client_time = max(client_processing_times.values()) if client_processing_times else 0

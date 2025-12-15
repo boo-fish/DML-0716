@@ -1,16 +1,22 @@
 ### 陶的代码
 
-python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3 --iid
-python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3 --iid
-python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3 --iid
-python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3 --iid
-python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3 --iid
-python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3
-python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3
-python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3
-python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3
-python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3
+#python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3 --iid
+#python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3 --iid
+#python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3 --iid
+#python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3 --iid
+#python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3 --iid
+#python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3
+#python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3
+#python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3
+#python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3
+#python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3
 
+
+python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 5 --ai 6 --alpha 0.3 --iid
+python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 5 --ai 6 --alpha 0.3 --iid
+
+python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 5 --ai 6 --alpha 0.3
+python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 5 --ai 6 --alpha 0.3
 
 echo "所有命令执行完毕"
 
