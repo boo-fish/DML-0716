@@ -22,7 +22,7 @@ lr = args.lr
 epoch_value = args.epochs
 
 # 创建保存图片的目录
-save_dir = r'D:\project\DML-0716\大修实验图\MNIST_准确率对比图'
+save_dir = r'./大修实验图/MNIST/'
 os.makedirs(save_dir, exist_ok=True)
 
 # 加载数据 - IID
