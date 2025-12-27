@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="a18f3371-4748-46a2-94e6-fc2f5422d837" name="gpu1226">
+        <fileTransfer accessType="SFTP" host="js4.blockelite.cn" port="13920" sshConfigId="8ee12d06-08fe-4441-9c23-d3f6a7b4cd1b" sshConfig="root@js4.blockelite.cn:13920 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
