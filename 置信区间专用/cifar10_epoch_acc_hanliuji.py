@@ -38,7 +38,7 @@ def load_group_pkls(method_dir, h, is_iid):
     返回：3次实验的准确率列表（每个列表是一轮轮的acc）
     """
     # 拼接方法目录路径
-    full_dir = os.path.join('../results-cifar10-置信区间-1225', method_dir)
+    full_dir = os.path.join('../results-cifar-合集-tao', method_dir)
     if not os.path.exists(full_dir):
         raise FileNotFoundError(f"方法目录不存在: {full_dir}")
 
@@ -184,6 +184,6 @@ for ai_idx in range(num_ais):
     plt.tight_layout()
     plt.subplots_adjust(bottom=0.22, wspace=0.3)
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    save_path = os.path.join(save_dir, f'2d-con-combined_100epoch_with_ci_{current_time}.pdf')
+    save_path = os.path.join(save_dir, f'2d-cifar_epoch_acc_with_CI_{current_time}.pdf')
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     print(f"✅ 图片已保存至: {save_path}")
