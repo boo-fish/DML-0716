@@ -4,7 +4,7 @@ import logging
 from collections import defaultdict
 from others.view_noiid分布 import visualize_dirichlet_distribution
 
-def perform_offloading(dataset, dict_users, offloading_data, max_attempts=1000):
+def perform_offloading(dataset, dict_users, offloading_data, max_attempts=1000,total_size=None):
     """
     根据offloading_data字典执行数据卸载
 
@@ -41,7 +41,11 @@ def perform_offloading(dataset, dict_users, offloading_data, max_attempts=1000):
             if src not in new_dict_users or dest not in new_dict_users:
                 continue
 
-            samples_of_need_offload = megabytes * 335
+            if total_size == 179:
+                samples_of_need_offload = megabytes * 335
+            elif total_size == 586:
+                samples_of_need_offload = megabytes * 85
+
             # # 计算源客户端的样本大小
             src_indices = list(new_dict_users[src])
 
@@ -257,7 +261,7 @@ def mnist_iid(dataset, num_users, round_idx, offloading_data, Ai_actdata=None, t
 
         # 执行数据卸载
         if offloading_data:
-            dict_users = perform_offloading(dataset, dict_users, offloading_data)
+            dict_users = perform_offloading(dataset, dict_users, offloading_data,total_size=total_size)
 
         return dict_users
     except FileNotFoundError as e:
@@ -271,7 +275,7 @@ def mnist_iid(dataset, num_users, round_idx, offloading_data, Ai_actdata=None, t
 
         # 执行数据卸载
         if offloading_data:
-            dict_users = perform_offloading(dataset, dict_users, offloading_data)
+            dict_users = perform_offloading(dataset, dict_users, offloading_data,total_size=total_size)
 
         return dict_users
 
@@ -322,11 +326,13 @@ def mnist_noniid_dirichlet(dataset, num_users, round_idx, offloading_data, alpha
     except FileNotFoundError as e:
         logging.error(f"文件未找到: {e}. 使用默认均匀划分方式。")
 
-    # 获取数据集标签
-    if hasattr(dataset, 'train_labels'):  # 兼容不同版本的MNIST加载方式
-        labels = dataset.train_labels.numpy()
+    # 4. 核心修改：通用标签获取逻辑（兼容MNIST/CIFAR10）
+    if hasattr(dataset, 'train_labels'):
+        labels = dataset.train_labels.numpy()  # 兼容旧版MNIST
+    elif hasattr(dataset, 'targets'):
+        labels = np.array(dataset.targets)  # CIFAR10/新版MNIST
     else:
-        labels = np.array([label for _, label in dataset])
+        labels = np.array([label for _, label in dataset])  # 兜底通用
 
     # 10
     num_classes = len(np.unique(labels))
@@ -414,6 +420,6 @@ def mnist_noniid_dirichlet(dataset, num_users, round_idx, offloading_data, alpha
 
     # 执行数据卸载
     if offloading_data:
-        dict_users = perform_offloading(dataset, dict_users, offloading_data)
+        dict_users = perform_offloading(dataset, dict_users, offloading_data,total_size=total_size)
 
     return dict_users

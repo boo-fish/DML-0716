@@ -21,7 +21,7 @@ def convert_numpy_int_to_python(d):
         return d
 
 
-def GetFlow(p=None, ai=None):
+def GetFlow(p=None, ai=None, dataset=None):
     try:
 
 
@@ -31,7 +31,17 @@ def GetFlow(p=None, ai=None):
         args = args_parser()
         num_servers = 10
         Ai_range = np.arange(ai, ai + 1)
-        alpha = 0.007
+        if dataset == 'mnist':
+            alpha = 0.4
+            left = 5
+            print("alpha和左区间设置为:", alpha,left)
+        elif dataset == 'cifar10':
+            alpha = 0.007
+            left = 15
+            print("alpha和左区间设置为:", alpha, left)
+        else:
+            raise NotImplementedError
+
         num_simulations = 1
         num_workers = args.num_users
         num_clients = args.num_users
@@ -50,7 +60,7 @@ def GetFlow(p=None, ai=None):
             # 工人节点的容量是5，45
             for sim in range(num_simulations):
                 env = NetworkEnvironment(num_workers, num_servers, num_clients, (50, 150),
-                                         (5, 5 * p), (30, 60),
+                                         (left, left * p), (30, 60),
                                          (Ai, Ai + 1), alpha).get_network()
 
 

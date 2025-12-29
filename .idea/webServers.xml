@@ -9,6 +9,13 @@
           </advancedOptions>
         </fileTransfer>
       </webServer>
+      <webServer id="eff4344a-b0b4-4a7d-9ec8-433000780108" name="yuzhan">
+        <fileTransfer accessType="SFTP" host="10.119.5.231" port="22" sshConfigId="5b688d1b-8484-4d37-bcd2-eb21e478a1f6" sshConfig="lyz@10.119.5.231:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
     </option>
   </component>
 </project>

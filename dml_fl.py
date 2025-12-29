@@ -87,6 +87,10 @@ def train_client(args, dataset_train, dict_users, client_dataset_sizes, idx, net
 
 
 def main():
+    torch.cuda.empty_cache()
+
+
+
     args = args_parser()
     epoch_value = args.epochs
     p_value = args.p
@@ -96,10 +100,10 @@ def main():
 
 
     # 修改：调用GetFlow并接收4个返回值
-    offloading_data, worker_capacity, Ai_actdata, training_data = GetFlow(p=p_value, ai=ai)
-    print("main中的卸载字典", offloading_data)
-    print("main中Ai的len", len(Ai_actdata))
-    print("main中Ai", Ai_actdata)
+    offloading_data, worker_capacity, Ai_actdata, training_data = GetFlow(p=p_value, ai=ai,dataset=args.dataset)
+    # print("main中的卸载字典", offloading_data)
+    # print("main中Ai的len", len(Ai_actdata))
+    # print("main中Ai", Ai_actdata)
 
 
     args.device = torch.device('cuda:{}'.format(args.gpu) if torch.cuda.is_available() and args.gpu != -1 else 'cpu')

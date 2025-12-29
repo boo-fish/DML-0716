@@ -1,63 +1,57 @@
-### 陶的代码
-
-python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3 --iid
-python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3 --iid
-python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3
-python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3
-
-
-
-
-
-#python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 5 --ai 6 --alpha 0.3 --iid
-#python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 5 --ai 6 --alpha 0.3 --iid
+python3 dml_fl.py --dataset mnist  --num_channels 1 --model cnn --epochs 55 --gpu 3 --p 10 --ai 6 --alpha 0.3   --lr 0.001  --iid
+python3 dml_fl_benchmark.py --dataset mnist  --num_channels 1 --model cnn --epochs 65 --gpu 3 --p 10 --ai 6 --alpha 0.3   --lr 0.001 --iid
+python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 120 --gpu 3 --p 10 --ai 6 --alpha 0.3   --lr 0.001 --iid
 #
-#python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 5 --ai 6 --alpha 0.3
-#python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 5 --ai 6 --alpha 0.3
+python3 dml_fl.py --dataset mnist  --num_channels 1 --model cnn --epochs 65 --gpu 3 --p 5 --ai 6 --alpha 0.3   --lr 0.001  --iid
+python3 dml_fl_benchmark.py --dataset mnist  --num_channels 1 --model cnn --epochs 65 --gpu 3 --p 5 --ai 6 --alpha 0.3   --lr 0.001 --iid
+python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 120 --gpu 3 --p 5 --ai 6 --alpha 0.3   --lr 0.001 --iid
+#
+python3 dml_fl.py --dataset mnist  --num_channels 1 --model cnn --epochs 70 --gpu 3 --p 10 --ai 6 --alpha 0.3   --lr 0.001
+python3 dml_fl_benchmark.py --dataset mnist  --num_channels 1 --model cnn --epochs 145 --gpu 3 --p 10 --ai 6 --alpha 0.3   --lr 0.001
+python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 145 --gpu 3 --p 10 --ai 6 --alpha 0.3   --lr 0.001
 
-echo "所有命令执行完毕"
+python3 dml_fl.py --dataset mnist  --num_channels 1 --model cnn --epochs 85 --gpu 3 --p 5 --ai 6 --alpha 0.3   --lr 0.001
+python3 dml_fl_benchmark.py --dataset mnist  --num_channels 1 --model cnn --epochs 145 --gpu 3 --p 5 --ai 6 --alpha 0.3   --lr 0.001
+python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 160 --gpu 3 --p 5 --ai 6 --alpha 0.3   --lr 0.001
 
 
-### 艾的代码
-##!/bin/bash
-## 独立同分布+基准方法
-#python3 dml_fl_benchmark.py --dataset mnist --iid  --num_channels 1 --model cnn --epochs 50 --gpu 0 --p 10 --ai 6 --alpha 0.3
-#python3 dml_fl_benchmark.py --dataset mnist --iid  --num_channels 1 --model cnn --epochs 50 --gpu 0 --p 5 --ai 6 --alpha 0.3
-## 非独立同分布+基准方法
-#python3 dml_fl_benchmark.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 0 --p 10 --ai 6 --alpha 0.3
-#python3 dml_fl_benchmark.py --dataset mnist  --num_channels 1 --model cnn --epochs 50 --gpu 0 --p 5 --ai 6 --alpha 0.3
-##独立同分布+本文方法
-#python3 dml_fl.py --dataset mnist --iid --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3
-#python3 dml_fl.py --dataset mnist --iid --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 5 --ai 6 --alpha 0.3
-#python3 dml_fl.py --dataset mnist --iid --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 3 --ai 6 --alpha 0.3
+
+
+
+python3 dml_fl.py --dataset mnist  --num_channels 1 --model cnn --epochs 55 --gpu 3 --p 10 --ai 6 --alpha 0.3   --lr 0.001  --iid
+python3 dml_fl_benchmark.py --dataset mnist  --num_channels 1 --model cnn --epochs 65 --gpu 3 --p 10 --ai 6 --alpha 0.3   --lr 0.001 --iid
+python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 120 --gpu 3 --p 10 --ai 6 --alpha 0.3   --lr 0.001 --iid
 #
-#python3 dml_fl.py --dataset mnist --iid --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.5
-#python3 dml_fl.py --dataset mnist --iid --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 5 --ai 6 --alpha 0.5
-#python3 dml_fl.py --dataset mnist --iid --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 3 --ai 6 --alpha 0.5
+python3 dml_fl.py --dataset mnist  --num_channels 1 --model cnn --epochs 65 --gpu 3 --p 5 --ai 6 --alpha 0.3   --lr 0.001  --iid
+python3 dml_fl_benchmark.py --dataset mnist  --num_channels 1 --model cnn --epochs 65 --gpu 3 --p 5 --ai 6 --alpha 0.3   --lr 0.001 --iid
+python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 120 --gpu 3 --p 5 --ai 6 --alpha 0.3   --lr 0.001 --iid
 #
-#python3 dml_fl.py --dataset mnist --iid --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.8
-#python3 dml_fl.py --dataset mnist --iid --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 5 --ai 6 --alpha 0.8
-#python3 dml_fl.py --dataset mnist --iid --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 3 --ai 6 --alpha 0.8
+python3 dml_fl.py --dataset mnist  --num_channels 1 --model cnn --epochs 70 --gpu 3 --p 10 --ai 6 --alpha 0.3   --lr 0.001
+python3 dml_fl_benchmark.py --dataset mnist  --num_channels 1 --model cnn --epochs 145 --gpu 3 --p 10 --ai 6 --alpha 0.3   --lr 0.001
+python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 145 --gpu 3 --p 10 --ai 6 --alpha 0.3   --lr 0.001
+
+python3 dml_fl.py --dataset mnist  --num_channels 1 --model cnn --epochs 85 --gpu 3 --p 5 --ai 6 --alpha 0.3   --lr 0.001
+python3 dml_fl_benchmark.py --dataset mnist  --num_channels 1 --model cnn --epochs 145 --gpu 3 --p 5 --ai 6 --alpha 0.3   --lr 0.001
+python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 160 --gpu 3 --p 5 --ai 6 --alpha 0.3   --lr 0.001
+
+
+
+
+
+python3 dml_fl.py --dataset mnist  --num_channels 1 --model cnn --epochs 55 --gpu 3 --p 10 --ai 6 --alpha 0.3   --lr 0.001  --iid
+python3 dml_fl_benchmark.py --dataset mnist  --num_channels 1 --model cnn --epochs 65 --gpu 3 --p 10 --ai 6 --alpha 0.3   --lr 0.001 --iid
+python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 120 --gpu 3 --p 10 --ai 6 --alpha 0.3   --lr 0.001 --iid
 #
-#python3 dml_fl.py --dataset mnist --iid --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 1.0
-#python3 dml_fl.py --dataset mnist --iid --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 5 --ai 6 --alpha 1.0
-#python3 dml_fl.py --dataset mnist --iid --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 3 --ai 6 --alpha 1.0
+python3 dml_fl.py --dataset mnist  --num_channels 1 --model cnn --epochs 65 --gpu 3 --p 5 --ai 6 --alpha 0.3   --lr 0.001  --iid
+python3 dml_fl_benchmark.py --dataset mnist  --num_channels 1 --model cnn --epochs 65 --gpu 3 --p 5 --ai 6 --alpha 0.3   --lr 0.001 --iid
+python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 120 --gpu 3 --p 5 --ai 6 --alpha 0.3   --lr 0.001 --iid
 #
-##非独立同分布+本文方法
-#python3 dml_fl.py --dataset mnist --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.3
-#python3 dml_fl.py --dataset mnist --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 5 --ai 6 --alpha 0.3
-#python3 dml_fl.py --dataset mnist --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 3 --ai 6 --alpha 0.3
-#
-#python3 dml_fl.py --dataset mnist --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.5
-#python3 dml_fl.py --dataset mnist --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 5 --ai 6 --alpha 0.5
-#python3 dml_fl.py --dataset mnist --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 3 --ai 6 --alpha 0.5
-#
-#python3 dml_fl.py --dataset mnist --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 0.8
-#python3 dml_fl.py --dataset mnist --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 5 --ai 6 --alpha 0.8
-#python3 dml_fl.py --dataset mnist --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 3 --ai 6 --alpha 0.8
-#
-#python3 dml_fl.py --dataset mnist --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 10 --ai 6 --alpha 1.0
-#python3 dml_fl.py --dataset mnist --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 5 --ai 6 --alpha 1.0
-#python3 dml_fl.py --dataset mnist --num_channels 1 --model cnn --epochs 50 --gpu 1 --p 3 --ai 6 --alpha 1.0
-#
-#echo "所有命令执行完毕"
+python3 dml_fl.py --dataset mnist  --num_channels 1 --model cnn --epochs 70 --gpu 3 --p 10 --ai 6 --alpha 0.3   --lr 0.001
+python3 dml_fl_benchmark.py --dataset mnist  --num_channels 1 --model cnn --epochs 145 --gpu 3 --p 10 --ai 6 --alpha 0.3   --lr 0.001
+python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 145 --gpu 3 --p 10 --ai 6 --alpha 0.3   --lr 0.001
+
+python3 dml_fl.py --dataset mnist  --num_channels 1 --model cnn --epochs 85 --gpu 3 --p 5 --ai 6 --alpha 0.3   --lr 0.001
+python3 dml_fl_benchmark.py --dataset mnist  --num_channels 1 --model cnn --epochs 145 --gpu 3 --p 5 --ai 6 --alpha 0.3   --lr 0.001
+python3 dml_fl_RAMFL_version1_hash.py --dataset mnist  --num_channels 1 --model cnn --epochs 160 --gpu 3 --p 5 --ai 6 --alpha 0.3   --lr 0.001
+
+echo "Done"

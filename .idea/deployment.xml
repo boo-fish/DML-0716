@@ -3,6 +3,13 @@
   <component name="PublishConfigData" serverName="tyx@10.119.5.232:22 password (2)" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false">
     <option name="confirmBeforeUploading" value="false" />
     <serverData>
+      <paths name="gpu1226">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
       <paths name="sunziwei@10.122.7.170:22 password">
         <serverdata>
           <mappings>
@@ -63,6 +70,13 @@
         <serverdata>
           <mappings>
             <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="yuzhan">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/data/lyz/tyx/DML-FGCS-revise-1229" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>

@@ -4,24 +4,26 @@ matplotlib.use('Agg')
 import numpy as np
 from torchvision import datasets, transforms
 client_data_size = None
-from utils.options import args_parser
+# from utils.options import args_parser
 import math
 import pickle
 
-def get_client_dataset_sizes():
+def get_client_dataset_sizes(data=None):
     # 设置相同的随机数种子
     np.random.seed(42)
     random.seed(42)
     # parse args
-    args = args_parser()
+    # args = args_parser()
 
     # load dataset and split users
-    if args.dataset == 'mnist':
+    if data == 'mnist':
         trans_mnist = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
         dataset_train = datasets.MNIST('../data/mnist/', train=True, download=True, transform=trans_mnist)
 
-    else:
-        exit('Error: unrecognized dataset')
+    elif data == 'cifar10':
+        trans_cifar = transforms.Compose(
+            [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+        dataset_train = datasets.CIFAR10('./data/cifar10', train=True, download=False, transform=trans_cifar)
 
     # 打印训练集总元素的大小和所占用的存储空间大小
     total_elements = len(dataset_train)
@@ -39,3 +41,6 @@ def get_client_dataset_sizes():
         pickle.dump(total_size, f)
 
     return 0
+
+get_client_dataset_sizes(data='cifar10')
+get_client_dataset_sizes(data='mnist')

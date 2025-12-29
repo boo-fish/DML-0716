@@ -3,6 +3,7 @@
   <component name="SshConfigs">
     <configs>
       <sshConfig authType="PASSWORD" host="js4.blockelite.cn" id="8ee12d06-08fe-4441-9c23-d3f6a7b4cd1b" port="13920" nameFormat="DESCRIPTIVE" username="root" useOpenSSHConfig="true" />
+      <sshConfig authType="PASSWORD" host="10.119.5.231" id="5b688d1b-8484-4d37-bcd2-eb21e478a1f6" port="22" nameFormat="DESCRIPTIVE" username="lyz" useOpenSSHConfig="true" />
     </configs>
   </component>
 </project>
