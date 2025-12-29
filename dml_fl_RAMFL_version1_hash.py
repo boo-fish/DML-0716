@@ -1,18 +1,17 @@
 import matplotlib
 import os
-from utils.sampling_benchmark import mnist_noniid_dirichlet
+from utils.sampling_benchmark import mnist_noniid_dirichlet, cifar10_noniid_dirichlet, mnist_iid, cifar10_iid
+
 matplotlib.use('TkAgg')
-import sys
 import copy
 import numpy as np
 from torchvision import datasets, transforms
 import torch
 import time
 from utils.network_environment import NetworkEnvironment
-from utils.sampling_benchmark import mnist_iid
 from utils.options import args_parser
 from models.Update_benchmark import LocalUpdate
-from models.Nets import MLP, CNNMnist, CNNCifar
+from models.Nets import MLP, CNNMnist, CNNCifar, VGG11
 from models.Fed import FedAvg
 from models.test import test_img
 import math
@@ -20,6 +19,7 @@ import pickle
 import torch.multiprocessing as mp
 from utils.get_offload_dict_dml import GetFlow
 from datetime import datetime
+import sys  # 补充缺失的导入（如果用到终止逻辑）
 
 # 获取当前时间
 now = datetime.now()
@@ -28,6 +28,7 @@ formatted_time = now.strftime("%Y-%m-%d-%H-%M-%S")
 # ========== 多服务器配置（与论文一致） ==========
 SERVER_NUM = 3  # 服务器个数（可调整，论文中为动态适配）
 MAP_UPDATE_INTERVAL = 5  # 每5轮更新客户端-服务器映射（论文核心逻辑）
+
 
 def client_train(args, dataset, idxs, server_w_param, client_data_size, worker_capacity, client_id):
     """客户端训练函数，使用分配的服务器参数作为初始参数"""
@@ -38,10 +39,18 @@ def client_train(args, dataset, idxs, server_w_param, client_data_size, worker_c
     loss = 0.0
 
     # 模型初始化（保持原有逻辑）
-    if args.model == 'cnn' and args.dataset == 'cifar':
+    if args.model == 'cnn' and args.dataset == 'cifar10':
         net = CNNCifar(args=args).to(args.device)
+
     elif args.model == 'cnn' and args.dataset == 'mnist':
         net = CNNMnist(args=args).to(args.device)
+
+    elif args.model == 'vgg11' and args.dataset == 'cifar10':
+        net = VGG11(args=args).to(args.device)
+
+    elif args.model == 'vgg11' and args.dataset == 'mnist':
+        net = VGG11(args=args).to(args.device)
+
     elif args.model == 'mlp':
         img_size = dataset[0][0].shape
         len_in = 1
@@ -83,6 +92,7 @@ def client_train(args, dataset, idxs, server_w_param, client_data_size, worker_c
     torch.cuda.empty_cache()
     return w, loss, client_elapsed_time, client_id
 
+
 def main():
     args = args_parser()
     alpha = args.alpha
@@ -113,19 +123,47 @@ def main():
             dataset_test = datasets.MNIST('../data/mnist/', train=False, download=True, transform=trans_mnist)
             if args.iid:
                 print("iid")
-                dict_users = mnist_iid(dataset_train, args.num_users, round_idx, Ai_actdata=Ai_actdata, total_size=total_size)
+                dict_users = mnist_iid(dataset_train, args.num_users, round_idx, Ai_actdata=Ai_actdata,
+                                       total_size=total_size)
             else:
                 print("non-iid")
-                dict_users = mnist_noniid_dirichlet(dataset_train, args.num_users, round_idx, alpha=alpha, Ai_actdata=Ai_actdata, total_size=total_size)
+                dict_users = mnist_noniid_dirichlet(dataset_train, args.num_users, round_idx, alpha=alpha,
+                                                    Ai_actdata=Ai_actdata, total_size=total_size)
+
+        elif args.dataset == 'cifar10':
+            trans_cifar = transforms.Compose(
+                [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+            dataset_train = datasets.CIFAR10('./data/cifar10', train=True, download=False, transform=trans_cifar)
+            dataset_test = datasets.CIFAR10('./data/cifar10', train=False, download=False, transform=trans_cifar)
+
+
+
+            if args.iid:
+                print("iid")
+                dict_users = mnist_iid(dataset_train, args.num_users, round_idx, Ai_actdata=Ai_actdata,
+                                         total_size=total_size)
+            else:
+                print("non-iid")
+                dict_users = mnist_noniid_dirichlet(dataset_train, args.num_users, round_idx, alpha=alpha,
+                                                      Ai_actdata=Ai_actdata, total_size=total_size)
+
         else:
             exit('Error: unrecognized dataset')
 
         # 模型初始化
         img_size = dataset_train[0][0].shape
-        if args.model == 'cnn' and args.dataset == 'cifar':
+        if args.model == 'cnn' and args.dataset == 'cifar10':
             net_glob = CNNCifar(args=args).to(args.device)
+
         elif args.model == 'cnn' and args.dataset == 'mnist':
             net_glob = CNNMnist(args=args).to(args.device)
+
+        elif args.model == 'vgg11' and args.dataset == 'cifar10':
+            net_glob = VGG11(args=args).to(args.device)
+
+        elif args.model == 'vgg11' and args.dataset == 'mnist':
+            net_glob = VGG11(args=args).to(args.device)
+
         elif args.model == 'mlp':
             len_in = 1
             for x in img_size:
@@ -136,6 +174,10 @@ def main():
 
         net_glob.train()
         init_w = net_glob.state_dict()
+
+        # ========== 核心修改：每个Ai轮次重新初始化多服务器参数 ==========
+        # 确保每个Ai轮次都从全新的初始参数开始，而非复用前一轮的参数
+        server_w = {s_id: copy.deepcopy(init_w) for s_id in range(SERVER_NUM)}
 
         # ========== 核心修改1：初始客户端-服务器映射（论文公式：ServerId_i = i % S） ==========
         # 基于哈希取模实现初始分配，确保客户端与服务器的固定映射（初始状态）
@@ -149,9 +191,6 @@ def main():
         label_size = 4 / (1024 * 1024)
         for client_idx, client_idxs in dict_users.items():
             client_dataset_sizes[client_idx] = math.floor(len(client_idxs) * (sample_size + label_size))
-
-        # 多服务器参数初始化
-        server_w = {s_id: copy.deepcopy(init_w) for s_id in range(SERVER_NUM)}
 
         # 全局训练轮次
         accuracies_per_round = []
@@ -168,8 +207,7 @@ def main():
                     new_client_server_map[client_id] = new_idx % SERVER_NUM
                 client_server_map = new_client_server_map
                 # print(f"第{epoch+1}轮更新映射（随机打乱+哈希取模）：{client_server_map}")
-                print(f"第{epoch+1}轮更新映射（随机打乱+哈希取模）")
-
+                print(f"第{epoch + 1}轮更新映射（随机打乱+哈希取模）")
 
             global_start_time = time.time()
             loss_locals = []
@@ -184,9 +222,9 @@ def main():
                 task_args = []
                 for idx in idxs_users:
                     s_id = client_server_map[idx]  # 获取客户端当前分配的服务器ID
-                    s_param = server_w[s_id]       # 加载该服务器的最新参数
+                    s_param = server_w[s_id]  # 加载该服务器的最新参数
                     task_args.append((args, dataset_train, dict_users[idx], s_param,
-                                     client_dataset_sizes[idx], worker_capacity, idx))
+                                      client_dataset_sizes[idx], worker_capacity, idx))
                 results = pool.starmap(client_train, task_args)
 
             # 按服务器分组聚合参数（论文多服务器聚合逻辑）
@@ -200,7 +238,7 @@ def main():
                     client_processing_times[client_id] = adjusted_time
             # print("各个服务器收集到的参数个数：")
             # for s_id in range(SERVER_NUM):
-                # print(f"服务器{s_id}: {len(server_client_params[s_id])}")
+            # print(f"服务器{s_id}: {len(server_client_params[s_id])}")
 
             # 每个服务器独立执行FedAvg聚合
             for s_id in range(SERVER_NUM):
@@ -234,7 +272,8 @@ def main():
             max_client_time = max(client_processing_times.values()) if client_processing_times else 0
             global_elapsed_time = max_client_time
             times_per_round.append(global_elapsed_time)
-            print(f"Ai={Ai}, Round {epoch + 1}, Test Accuracy: {acc_test}, Loss: {loss_test}, Time: {global_elapsed_time}")
+            print(
+                f"Ai={Ai}, Round {epoch + 1}, Test Accuracy: {acc_test}, Loss: {loss_test}, Time: {global_elapsed_time}")
             accuracies_per_round.append(acc_test)
             torch.cuda.empty_cache()
 
@@ -246,7 +285,7 @@ def main():
     # 保存结果
     save_dir = 'results/RAMFL'
     os.makedirs(save_dir, exist_ok=True)
-    filename = os.path.join(save_dir, f'Ai_{Ai}_P_{p_value}_epoch_{epoch_value}_is_iid_{args.iid}_local_alpha_{alpha}_Final_Acc_{accuracies_per_round[-1]:.4f}_{formatted_time}.pkl')
+    filename = os.path.join(save_dir, f'{args.dataset}_{args.model}_{Ai}_{p_value}_epoch_{epoch_value}_isIID_{args.iid}_alpha_{alpha}_Final_Acc_{accuracies_per_round[-1]:.4f}_{formatted_time}.pkl')
     data_to_save = {
         'ais': [x[0] for x in Ai_actdata],
         'test_accuracies': test_accuracies,
@@ -257,6 +296,7 @@ def main():
         pickle.dump(data_to_save, f)
     print("成功保存数据pkl文件")
     return data_to_save
+
 
 if __name__ == "__main__":
     mp.set_start_method('spawn')

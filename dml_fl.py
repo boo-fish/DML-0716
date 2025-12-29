@@ -13,7 +13,7 @@ from utils.get_offload_dict_dml import GetFlow
 from utils.sampling_dml import mnist_iid, mnist_noniid_dirichlet
 from utils.options import args_parser
 from models.Update_dml import LocalUpdate
-from models.Nets import MLP, CNNMnist, CNNCifar
+from models.Nets import MLP, CNNMnist, CNNCifar, VGG11
 from models.Fed import FedAvg
 from models.test import test_img
 import math
@@ -38,6 +38,31 @@ def get_size_in_mb(state_dict_list):
             if isinstance(tensor, torch.Tensor):
                 total_size += tensor.element_size() * tensor.numel()
     return total_size / (1024 ** 2)  # Bytes -> MB
+
+
+def get_gradient_size_in_mb(global_w, local_w_list):
+    """
+    计算客户端梯度的总内存大小（单位：MB）
+    :param global_w: 全局模型初始权重（state_dict）
+    :param local_w_list: 各客户端本地训练后的权重列表（list of state_dict）
+    :return: 所有客户端梯度的总内存大小（MB）
+    """
+    total_gradient_size = 0
+    for local_w in local_w_list:
+        if local_w is None:
+            continue
+        # 遍历每一层参数，计算梯度（本地权重 - 全局初始权重）
+        for key in global_w.keys():
+            global_tensor = global_w[key].cpu().contiguous()  # 转移到CPU并连续存储
+            local_tensor = local_w[key].cpu().contiguous()
+            gradient_tensor = local_tensor - global_tensor  # 得到梯度张量
+
+            # 计算该梯度张量的字节大小
+            element_size = gradient_tensor.element_size()  # 每个元素的字节数
+            num_elements = gradient_tensor.numel()  # 元素总数
+            total_gradient_size += element_size * num_elements
+
+    return total_gradient_size / (1024 ** 2)  # 转换为MB
 
 def train_client(args, dataset_train, dict_users, client_dataset_sizes, idx, net_glob, worker_capacity):
     # 记录客户端训练开始时间
@@ -112,14 +137,46 @@ def main():
                 dict_users = mnist_noniid_dirichlet(dataset_train, args.num_users, round_idx, offloading_data,alpha=alpha,
                           Ai_actdata=Ai_actdata, total_size=total_size)
                 # visualize_dirichlet_distribution(dataset_train, dict_users,10,args.num_users)
+        elif args.dataset == 'cifar10':
+            trans_cifar = transforms.Compose(
+                [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+            dataset_train = datasets.CIFAR10('./data/cifar10', train=True, download=False, transform=trans_cifar)
+            dataset_test = datasets.CIFAR10('./data/cifar10', train=False, download=False, transform=trans_cifar)
+
+            if args.iid:
+                print("iid")
+                print(f"args.iid:{args.iid}")
+                # 将 round_idx 传递给 mnist_iid 函数
+                # =========关键修改：传递Ai_actdata和total_size参数==========
+                dict_users = mnist_iid(dataset_train, args.num_users, round_idx, offloading_data,
+                                       Ai_actdata=Ai_actdata, total_size=total_size)
+
+            else:
+                print("non iid")
+                print(f"args.iid:{args.iid}")
+                # Dirichlet分布实现Non-IID  alpha控制 non-IID 程度
+                # =========关键修改：传递Ai_actdata和total_size参数==========
+                dict_users = mnist_noniid_dirichlet(dataset_train, args.num_users, round_idx, offloading_data,
+                                                    alpha=alpha,
+                                                    Ai_actdata=Ai_actdata, total_size=total_size)
+
+        else:
+            exit('Error: unrecognized dataset')
 
         img_size = dataset_train[0][0].shape
 
         # build model
-        if args.model == 'cnn' and args.dataset == 'cifar':
+        if args.model == 'cnn' and args.dataset == 'cifar10':
             net_glob = CNNCifar(args=args).to(args.device)
         elif args.model == 'cnn' and args.dataset == 'mnist':
             net_glob = CNNMnist(args=args).to(args.device)
+
+        elif args.model == 'vgg11' and args.dataset == 'cifar10':
+            net_glob = VGG11(args=args).to(args.device)
+
+        elif args.model == 'vgg11' and args.dataset == 'mnist':
+            net_glob = VGG11(args=args).to(args.device)
+
         elif args.model == 'mlp':
             len_in = 1
             for x in img_size:
@@ -175,7 +232,9 @@ def main():
 
             # 输出 w_locals 的总大小
             size_mb = get_size_in_mb(w_locals)
+            gradient_mb = get_gradient_size_in_mb(w_glob,w_locals)
             print(f"Total memory used by w_locals: {size_mb:.2f} MB")
+            print(f"get_gradient_size_in_mb: {gradient_mb:.2f} MB")
 
 
             # 更新全局模型
@@ -211,7 +270,7 @@ def main():
     save_dir = 'results/DML'
     os.makedirs(save_dir, exist_ok=True)  # 如果不存在则创建
     # 构造文件名（注意添加 save_dir 前缀）
-    filename = os.path.join(save_dir,f'Ai_{Ai}_P_{p_value}_epoch_{epoch_value}_is_iid_{args.iid}_local_alpha_{alpha}_Final_Acc_{accuracies_per_round[-1]:.4f}_{formatted_time}.pkl')
+    filename = os.path.join(save_dir, f'{args.dataset}_{args.model}_{Ai}_{p_value}_epoch_{epoch_value}_isIID_{args.iid}_alpha_{alpha}_Final_Acc_{accuracies_per_round[-1]:.4f}_{formatted_time}.pkl')
 
     # 保存数据
     data_to_save = {

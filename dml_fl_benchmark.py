@@ -11,7 +11,7 @@ from utils.network_environment import NetworkEnvironment
 from utils.sampling_benchmark import mnist_iid
 from utils.options import args_parser
 from models.Update_benchmark import LocalUpdate
-from models.Nets import MLP, CNNMnist, CNNCifar
+from models.Nets import MLP, CNNMnist, CNNCifar,VGG11
 from models.Fed import FedAvg
 from models.test import test_img
 import math
@@ -26,6 +26,7 @@ now = datetime.now()
 # 按所需格式转换为字符串
 formatted_time = now.strftime("%Y-%m-%d-%H-%M-%S")
 
+
 def client_train(args, dataset, idxs, w_glob, client_data_size, worker_capacity, client_id):
     """客户端训练函数，考虑客户端容量"""
     client_start_time = time.time()
@@ -36,26 +37,35 @@ def client_train(args, dataset, idxs, w_glob, client_data_size, worker_capacity,
     w = w_glob.copy()
     loss = 0.0  # 初始化损失
 
-    # 根据参数创建模型
-    if args.model == 'cnn' and args.dataset == 'cifar':
-        net = CNNCifar(args=args).to(args.device)
-    elif args.model == 'cnn' and args.dataset == 'mnist':
-        net = CNNMnist(args=args).to(args.device)
-    elif args.model == 'mlp':
-        img_size = dataset[0][0].shape
-        len_in = 1
-        for x in img_size:
-            len_in *= x
-        net = MLP(dim_in=len_in, dim_hidden=200, dim_out=args.num_classes).to(args.device)
-    else:
-        raise ValueError('Error: unrecognized model')
-    net.load_state_dict(w_glob)
-
     # 若客户端无数据，直接返回全局模型和默认损失
     if data_size == 0:
         client_end_time = time.time()
         client_elapsed_time = client_end_time - client_start_time
         return w, loss, client_elapsed_time, client_id
+
+    # 创建模型（先在CPU上创建，稍后移到GPU）
+    if args.model == 'cnn' and args.dataset == 'cifar10':
+        net = CNNCifar(args=args)
+    elif args.model == 'cnn' and args.dataset == 'mnist':
+        net = CNNMnist(args=args)
+    elif args.model == 'vgg11' and args.dataset == 'cifar10':
+        net = VGG11(args=args)
+    elif args.model == 'vgg11' and args.dataset == 'mnist':
+        net = VGG11(args=args)
+    elif args.model == 'mlp':
+        img_size = dataset[0][0].shape
+        len_in = 1
+        for x in img_size:
+            len_in *= x
+        net = MLP(dim_in=len_in, dim_hidden=200, dim_out=args.num_classes)
+    else:
+        raise ValueError('Error: unrecognized model')
+
+    # 加载全局权重到模型
+    net.load_state_dict(w_glob)
+
+    # 将模型移到设备（GPU或CPU）
+    net.to(args.device)
 
     # 计算客户端容量对应的样本数
     sample, label = dataset[0]
@@ -65,21 +75,50 @@ def client_train(args, dataset, idxs, w_glob, client_data_size, worker_capacity,
 
     start_idx = 0
     batch_num = 0
+
+    # 分批训练
     while start_idx < data_size:
+        # 计算当前批次的结束索引
         remaining_samples = data_size - start_idx
         end_idx = start_idx + min(num_samples_in_capacity, remaining_samples)
         local_idxs = idxs[start_idx:end_idx]
 
+        # 创建LocalUpdate实例并训练
+        local = LocalUpdate(args=args, dataset=dataset, idxs=local_idxs,
+                            client_data_size=num_samples_in_capacity)
+
         # 执行本地训练，更新w和loss
-        local = LocalUpdate(args=args, dataset=dataset, idxs=local_idxs, client_data_size=num_samples_in_capacity)
         w, loss = local.train(net=net)  # 覆盖初始化的w和loss
-        net.load_state_dict(w)
+
+        # 清理当前批次的梯度
+        net.zero_grad()
+
+        # 重新加载权重到模型（为了内存优化）
+        if torch.cuda.is_available() and args.device.type == 'cuda':
+            # 如果使用GPU，先移到CPU减少GPU内存占用
+            net.cpu()
+            net.load_state_dict(w)
+            net.to(args.device)
+        else:
+            # 如果使用CPU，直接加载
+            net.load_state_dict(w)
+
+        # 清理CUDA缓存（如果是GPU）
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+        # 更新索引
         start_idx = end_idx
         batch_num += 1
 
     client_end_time = time.time()
     client_elapsed_time = client_end_time - client_start_time
-    torch.cuda.empty_cache()
+
+    # 最终清理
+    del net
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
     return w, loss, client_elapsed_time, client_id
 
 def main():
@@ -125,7 +164,36 @@ def main():
                 print("non-iid")
                 dict_users = mnist_noniid_dirichlet(dataset_train, args.num_users, round_idx, alpha=alpha,Ai_actdata=Ai_actdata, total_size=total_size)
 
+
+        elif args.dataset == 'cifar10':
+
+            trans_cifar = transforms.Compose(
+
+                [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+
+            dataset_train = datasets.CIFAR10('./data/cifar10', train=True, download=False, transform=trans_cifar)
+
+            dataset_test = datasets.CIFAR10('./data/cifar10', train=False, download=False, transform=trans_cifar)
+
+            if args.iid:
+
+                print("iid")
+
+                dict_users = mnist_iid(dataset_train, args.num_users, round_idx, Ai_actdata=Ai_actdata,
+
+                                       total_size=total_size)
+
+            else:
+
+                print("non-iid")
+
+                dict_users = mnist_noniid_dirichlet(dataset_train, args.num_users, round_idx, alpha=alpha,
+
+                                                    Ai_actdata=Ai_actdata, total_size=total_size)
+
+
         else:
+
             exit('Error: unrecognized dataset')
 
 
@@ -140,10 +208,16 @@ def main():
         img_size = dataset_train[0][0].shape
 
         # build model
-        if args.model == 'cnn' and args.dataset == 'cifar':
+        if args.model == 'cnn' and args.dataset == 'cifar10':
             net_glob = CNNCifar(args=args).to(args.device)
         elif args.model == 'cnn' and args.dataset =='mnist':
             net_glob = CNNMnist(args=args).to(args.device)
+
+        elif args.model == 'vgg11' and args.dataset == 'cifar10':
+            net_glob = VGG11(args=args).to(args.device)
+
+        elif args.model == 'vgg11' and args.dataset == 'mnist':
+            net_glob = VGG11(args=args).to(args.device)
         elif args.model =='mlp':
             len_in = 1
             for x in img_size:
@@ -230,7 +304,7 @@ def main():
     save_dir = 'results/benchmark'
     os.makedirs(save_dir, exist_ok=True)  # 如果不存在则创建
     # 构造文件名（注意添加 save_dir 前缀）
-    filename = os.path.join(save_dir, f'Ai_{Ai}_P_{p_value}_epoch_{epoch_value}_is_iid_{args.iid}_local_alpha_{alpha}_Final_Acc_{accuracies_per_round[-1]:.4f}_{formatted_time}.pkl')
+    filename = os.path.join(save_dir, f'{args.dataset}_{args.model}_{Ai}_{p_value}_epoch_{epoch_value}_isIID_{args.iid}_alpha_{alpha}_Final_Acc_{accuracies_per_round[-1]:.4f}_{formatted_time}.pkl')
 
     # 保存数据
     data_to_save = {
