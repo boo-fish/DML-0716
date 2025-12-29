@@ -30,7 +30,6 @@ formatted_time = now.strftime("%Y-%m-%d-%H-%M-%S")
 
 
 
-
 def get_size_in_mb(state_dict_list):
     total_size = 0
     for state_dict in state_dict_list:
@@ -105,6 +104,18 @@ def main():
 
     args.device = torch.device('cuda:{}'.format(args.gpu) if torch.cuda.is_available() and args.gpu != -1 else 'cpu')
 
+    # 设定数据集对应的目标准确率
+    if args.dataset == 'mnist':
+        target_accuracy = 92.0  # mnist数据集目标准确率92%
+        target_epoch = 50
+    elif args.dataset == 'cifar10':
+        target_accuracy = 55.0  # cifar10数据集目标准确率55%
+        target_epoch = 100
+    else:
+        target_accuracy = 0.0  # 未知数据集默认值
+        print(f"警告：未识别的数据集 {args.dataset}，未设置目标准确率")
+
+    print(f"目标准确率：{target_accuracy}，目标epoch：{target_epoch}")
 
     # 存储测试集准确率
     test_accuracies = []
@@ -118,8 +129,8 @@ def main():
         # load dataset and split users
         if args.dataset == 'mnist':
             trans_mnist = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
-            dataset_train = datasets.MNIST('../data/mnist/', train=True, download=True, transform=trans_mnist)
-            dataset_test = datasets.MNIST('../data/mnist/', train=False, download=True, transform=trans_mnist)
+            dataset_train = datasets.MNIST('./data/mnist/', train=True, download=False, transform=trans_mnist)
+            dataset_test = datasets.MNIST('./data/mnist/', train=False, download=False, transform=trans_mnist)
             # sample users
             if args.iid:
                 print("iid")
@@ -250,6 +261,21 @@ def main():
 
             # 测试全局模型
             acc_test, loss_test = test_img(net_glob, dataset_test, args)
+
+            # 监测测试集准确率，达到目标则提前停止训练
+            if acc_test > target_accuracy and epoch >= target_epoch:
+                print(f"Epoch{epoch} 🎉 测试集准确率 {acc_test:.2f} 达到目标准确率 {target_accuracy}，提前终止训练！")
+
+                # 立即保存当前轮次结果（替代原有的仅保存最后一轮）
+                accuracies_per_round.append(acc_test)
+                times_per_round.append(adjusted_global_time)
+
+                # 手动释放CUDA缓存
+                torch.cuda.empty_cache()
+
+                # 跳出epoch循环，不再继续训练
+                break
+
 
             accuracies_per_round.append(acc_test)
             times_per_round.append(adjusted_global_time)
