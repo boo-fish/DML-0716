@@ -38,7 +38,7 @@ def load_group_pkls(method_dir, h, is_iid):
     返回：3次实验的准确率列表（每个列表是一轮轮的acc）
     """
     # 拼接方法目录路径
-    full_dir = os.path.join('../results-mnist-合集-tao', method_dir)
+    full_dir = os.path.join('../results-mnist-Final-tao', method_dir)
     if not os.path.exists(full_dir):
         raise FileNotFoundError(f"方法目录不存在: {full_dir}")
 
@@ -53,7 +53,7 @@ def load_group_pkls(method_dir, h, is_iid):
                 h_key in fname and
                 (iid_key in fname or str(is_iid) in fname)):  # 兼容不同的IID命名格式
             pkl_paths.append(os.path.join(full_dir, fname))
-            if len(pkl_paths) == 7:  # 只取前3个符合条件的pkl
+            if len(pkl_paths) == 5:  # 只取前3个符合条件的pkl
                 break
 
     # 校验pkl数量
@@ -163,7 +163,7 @@ for ai_idx in range(num_ais):
             # 绘制均值曲线（仅前50个epoch）
             ax.plot(rounds, mean_acc, label=method_name, color=color, linewidth=1.5)
             # 绘制置信区间阴影（半透明）
-            ax.fill_between(rounds, ci_lower, ci_upper, color=color, alpha=0.15)
+            ax.fill_between(rounds, ci_lower, ci_upper, color=color, alpha=0.1)
 
         # 子图样式配置（固定x轴范围为0~51）
         ax.set_xlabel('Epoch', fontsize=12)
