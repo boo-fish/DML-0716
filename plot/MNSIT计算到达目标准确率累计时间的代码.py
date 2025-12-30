@@ -1,137 +1,285 @@
-# @Date       2025/12/22 下午4:03
-# @Author     2024级电子信息计算机方向 艾春慧
-# @University MUC
-import pickle
 import os
-from datetime import datetime
+import pickle
+import re
+import torch
+from collections import defaultdict
+import numpy as np
 
-# ===================== 基础配置 =====================
-# 目标准确率（与原代码保持一致）
-TARGET_ACCURACY = 92
+# 设置根文件夹路径
+root_directory = r'D:\project\DML-0716\results-mnist-Final-tao'
 
-# 数据文件路径（沿用你原有配置，包含所有模型）
-DATA_PATHS = {
-    'proposed_iid': '../saving/time/Ai_6_P_10_epoch_100_is_iid_True_DML_alpha_0.3.pkl',
-    'proposed_noniid': '../saving/time/Ai_6_P_10_epoch_100_is_iid_False_DML_alpha_0.3.pkl',
-    'conventional_iid': '../saving/time/Ai_6_P_10_epoch_100_is_iid_True_local_alpha_0.3.pkl',
-    'conventional_noniid': '../saving/time/Ai_6_P_10_epoch_100_is_iid_False_local_alpha_0.3.pkl',
-    'ramfl_iid': r'D:\project\DML-0716\results-1217\RAMFL\Ai_6_P_10_epoch_60_is_iid_True_local_alpha_0.3_Final_Acc_92.4300_2025-12-15-12-23-41.pkl',
-    'ramfl_noniid': r'D:\project\DML-0716\results-1217\RAMFL\Ai_6_P_10_epoch_155_is_iid_False_local_alpha_0.3_Final_Acc_92.4600_2025-12-16-01-13-51.pkl'
-}
+# 定义需要处理的子文件夹
+target_folders = ['DML', 'benchmark', 'RAMFL']
 
+# 每个分组读取的文件数量
+K = 5
 
-# ===================== 工具函数 =====================
-def convert_to_python(value):
-    """张量转标量（处理PyTorch张量等非Python原生类型）"""
-    if hasattr(value, 'item'):
-        return value.item()
-    return value
+# 用于存储分组结果的字典
+# 结构: {文件夹名: { (isIID值, 数字): [文件列表] }}
+grouped_files = defaultdict(lambda: defaultdict(list))
 
+# 编译正则表达式来提取isIID和数字信息
+# 匹配 isIID_True/False 和前面的数字（5/10）
+pattern = re.compile(r'(\d+)_epoch.*?isIID_(True|False)')
 
-def calculate_cumulative_time(times):
-    """将每轮时间转换为累计时间"""
-    cumulative_times = []
-    total_time = 0.0
-    for single_round_time in times:
-        total_time += convert_to_python(single_round_time)
-        cumulative_times.append(round(total_time, 4))  # 保留4位小数，增强可读性
-    return cumulative_times
+# 第一步：遍历所有目标文件夹，按规则分组文件
+for folder in target_folders:
+    folder_path = os.path.join(root_directory, folder)
 
+    # 检查文件夹是否存在
+    if not os.path.isdir(folder_path):
+        print(f"警告：文件夹 {folder_path} 不存在，跳过")
+        continue
 
-def get_time_to_target_accuracy(times, accuracies, target_accuracy):
-    """
-    获取达到目标准确率时的累计时间
-    返回：(是否达到目标, 达到目标的累计时间, 最终准确率)
-    """
-    # 先计算累计时间
-    cumulative_times = calculate_cumulative_time(times)
-    # 转换准确率为标量
-    acc_scalars = [convert_to_python(acc) for acc in accuracies]
+    # 获取文件夹下所有.pkl文件
+    pkl_files = [f for f in os.listdir(folder_path) if f.endswith('.pkl')]
 
-    # 遍历数据，找到首次达到目标的时间
-    for idx, (cum_time, acc) in enumerate(zip(cumulative_times, acc_scalars)):
-        if acc >= target_accuracy:
-            return True, cum_time, acc, idx  # idx为达到目标时的轮次
+    # 对每个文件进行分组
+    for filename in sorted(pkl_files):
+        # 使用正则表达式提取信息
+        match = pattern.search(filename)
+        if match:
+            number = match.group(1)  # 提取5或10
+            is_iid = match.group(2)  # 提取True或False
 
-    # 若未达到目标，返回最终状态
-    final_time = cumulative_times[-1] if cumulative_times else 0.0
-    final_acc = acc_scalars[-1] if acc_scalars else 0.0
-    return False, final_time, final_acc, len(cumulative_times) - 1
+            # 只处理5和10的情况
+            if number in ['5', '10']:
+                key = (is_iid, number)
+                grouped_files[folder][key].append(filename)
 
+# 打印分组统计信息
+print("=" * 120)
+print("分组统计信息：")
+print("=" * 120)
+for folder, groups in grouped_files.items():
+    print(f"\n文件夹: {folder}")
+    for (is_iid, number), files in groups.items():
+        count = len(files)
+        print(f"  isIID={is_iid}, 数字={number}: 共{count}个文件 (取前{min(K, count)}个)")
 
-def load_single_pkl_file(file_path):
-    """加载单个pkl文件，包含异常处理"""
-    try:
-        with open(file_path, 'rb') as f:
-            return pickle.load(f)
-    except Exception as e:
-        print(f"❌ 警告：读取文件 {file_path} 失败 - {e}")
-        return None
+# 第二步：处理每个分组的前K个文件，统计精度轮数和累计时间
+print("\n" + "=" * 120)
+print("精度轮数和累计时间统计结果：")
+print("=" * 120)
+# 打印表头
+header = (f"{'文件夹':<10} {'分组(isIID,数字)':<20} {'文件名':<60} "
+          f"{'round_80':>10} {'time_80(s)':>12} "
+          f"{'round_85':>10} {'time_85(s)':>12} "
+          f"{'round_90':>10} {'time_90(s)':>12}")
+print(header)
+print("=" * len(header))
 
+# 遍历每个分组处理文件
+for folder, groups in grouped_files.items():
+    for (is_iid, number), files in groups.items():
+        group_label = f"({is_iid}, {number})"
 
-# ===================== 核心逻辑：加载数据并提取时间 =====================
-def print_time_to_target():
-    """主函数：加载所有模型数据，计算并打印达到目标准确率的累计时间"""
-    # 1. 加载所有数据
-    print("📌 开始加载各模型数据...")
-    data_dict = {
-        model_name: load_single_pkl_file(file_path)
-        for model_name, file_path in DATA_PATHS.items()
-    }
+        # 取前K个文件
+        files_to_process = files[:K]
 
-    # 2. 校验数据加载有效性
-    invalid_models = [name for name, data in data_dict.items() if data is None]
-    if invalid_models:
-        print(f"❌ 以下模型数据加载失败，将跳过：{', '.join(invalid_models)}")
-
-    # 3. 确定有效AI数量（取所有有效模型的最小AI数）
-    valid_data = {name: data for name, data in data_dict.items() if data is not None}
-    if not valid_data:
-        print("❌ 无有效模型数据，程序退出！")
-        return
-
-    num_ais = min(len(data['ais']) for data in valid_data.values())
-    if num_ais == 0:
-        print("❌ 未找到有效AI数据，程序退出！")
-        return
-    print(f"✅ 检测到有效AI数量：{num_ais} 个\n")
-
-    # 4. 遍历每个模型和AI，计算并打印时间
-    print("=" * 80)
-    print(f"🎯 目标准确率：{TARGET_ACCURACY}%")
-    print("=" * 80)
-    print(
-        f"{'模型名称':<20} {'AI索引':<10} {'是否达标':<10} {'达标累计时间(s)':<20} {'最终准确率(%)':<15} {'达标轮次':<10}")
-    print("-" * 80)
-
-    for model_name, data in valid_data.items():
-        for ai_idx in range(num_ais):
-            # 获取当前AI的轮次时间和准确率
+        for filename in files_to_process:
+            filepath = os.path.join(root_directory, folder, filename)
             try:
-                round_times = data['global_round_times'][ai_idx]
-                round_accs = data['global_round_accuracies'][ai_idx]
-            except KeyError as e:
-                print(f"{model_name:<20} {ai_idx:<10} {'异常':<10} {'-':<20} {'-':<15} {'-':<10} （缺失键：{e}）")
+                # 读取pkl文件
+                with open(filepath, 'rb') as f:
+                    data = pickle.load(f)
+
+                # 读取global_round_accuracies和global_round_times的第一个元素
+                round_accuracies = data['global_round_accuracies'][0]
+                round_times = data['global_round_times'][0]
+
+                # 转换为float（处理tensor）
+                round_accuracies_float = []
+                for acc in round_accuracies:
+                    if isinstance(acc, torch.Tensor):
+                        round_accuracies_float.append(acc.item())
+                    else:
+                        round_accuracies_float.append(float(acc))
+
+                # 转换时间为float（处理tensor）
+                round_times_float = []
+                for t in round_times:
+                    if isinstance(t, torch.Tensor):
+                        round_times_float.append(t.item())
+                    else:
+                        round_times_float.append(float(t))
+
+                # 查找首次达到80、85、90精度的轮数（轮数从1开始）
+                round_80 = next((i + 1 for i, acc in enumerate(round_accuracies_float) if acc >= 80), None)
+                round_85 = next((i + 1 for i, acc in enumerate(round_accuracies_float) if acc >= 85), None)
+                round_90 = next((i + 1 for i, acc in enumerate(round_accuracies_float) if acc >= 90), None)
+
+                # 计算达到对应精度的累计时间
+                time_80 = None
+                if round_80 and round_80 <= len(round_times_float):
+                    # 累计时间：前round_80轮的时间总和
+                    time_80 = sum(round_times_float[:round_80])
+
+                time_85 = None
+                if round_85 and round_85 <= len(round_times_float):
+                    time_85 = sum(round_times_float[:round_85])
+
+                time_90 = None
+                if round_90 and round_90 <= len(round_times_float):
+                    time_90 = sum(round_times_float[:round_90])
+
+                # 格式化输出
+                print(f"{folder:<10} {group_label:<20} {filename:<60} "
+                      f"{str(round_80):>10} {f'{time_80:.2f}' if time_80 else '-':>12} "
+                      f"{str(round_85):>10} {f'{time_85:.2f}' if time_85 else '-':>12} "
+                      f"{str(round_90):>10} {f'{time_90:.2f}' if time_90 else '-':>12}")
+
+            except Exception as e:
+                print(f"{folder:<10} {group_label:<20} {filename:<60} "
+                      f"{'Error':>10} {'Error':>12} {'Error':>10} {'Error':>12} {'Error':>10} {'Error':>12}")
+                print(f"                      {' ':<60}  [ERROR] 无法解析该文件: {e}")
+
+# 第三步：生成汇总统计
+print("\n" + "=" * 120)
+print("汇总统计（每个分组的平均轮数和平均累计时间）：")
+print("=" * 120)
+summary = defaultdict(lambda: defaultdict(dict))
+
+# 重新处理文件，收集每个分组的轮数和时间数据
+for folder, groups in grouped_files.items():
+    for (is_iid, number), files in groups.items():
+        group_key = (folder, is_iid, number)
+        files_to_process = files[:K]
+
+        # 初始化存储列表
+        summary[group_key]['80_rounds'] = []
+        summary[group_key]['80_times'] = []
+        summary[group_key]['85_rounds'] = []
+        summary[group_key]['85_times'] = []
+        summary[group_key]['90_rounds'] = []
+        summary[group_key]['90_times'] = []
+        summary[group_key]['count'] = 0
+
+        for filename in files_to_process:
+            filepath = os.path.join(root_directory, folder, filename)
+            try:
+                with open(filepath, 'rb') as f:
+                    data = pickle.load(f)
+
+                round_accuracies = data['global_round_accuracies'][0]
+                round_times = data['global_round_times'][0]
+
+                # 转换为float
+                round_accuracies_float = [acc.item() if isinstance(acc, torch.Tensor) else float(acc)
+                                          for acc in round_accuracies]
+                round_times_float = [t.item() if isinstance(t, torch.Tensor) else float(t)
+                                     for t in round_times]
+
+                # 获取达到各精度的轮数和累计时间
+                round_80 = next((i + 1 for i, acc in enumerate(round_accuracies_float) if acc >= 80), None)
+                round_85 = next((i + 1 for i, acc in enumerate(round_accuracies_float) if acc >= 85), None)
+                round_90 = next((i + 1 for i, acc in enumerate(round_accuracies_float) if acc >= 90), None)
+
+                # 计算累计时间
+                time_80 = sum(round_times_float[:round_80]) if (
+                            round_80 and round_80 <= len(round_times_float)) else None
+                time_85 = sum(round_times_float[:round_85]) if (
+                            round_85 and round_85 <= len(round_times_float)) else None
+                time_90 = sum(round_times_float[:round_90]) if (
+                            round_90 and round_90 <= len(round_times_float)) else None
+
+                # 收集有效数据
+                if round_80 and time_80:
+                    summary[group_key]['80_rounds'].append(round_80)
+                    summary[group_key]['80_times'].append(time_80)
+                if round_85 and time_85:
+                    summary[group_key]['85_rounds'].append(round_85)
+                    summary[group_key]['85_times'].append(time_85)
+                if round_90 and time_90:
+                    summary[group_key]['90_rounds'].append(round_90)
+                    summary[group_key]['90_times'].append(time_90)
+
+                summary[group_key]['count'] += 1
+
+            except Exception as e:
                 continue
 
-            # 计算达到目标的时间
-            is_reached, target_time, final_acc, target_round = get_time_to_target_accuracy(
-                round_times, round_accs, TARGET_ACCURACY
-            )
+# 打印汇总结果
+header_summary = (f"{'文件夹':<10} {'isIID':<10} {'数字':<10} {'样本数':<8} "
+                  f"{'平均round_80':>12} {'平均time_80(s)':>15} "
+                  f"{'平均round_85':>12} {'平均time_85(s)':>15} "
+                  f"{'平均round_90':>12} {'平均time_90(s)':>15}")
+print(header_summary)
+print("=" * len(header_summary))
 
-            # 格式化输出
-            reach_status = "是" if is_reached else "否"
-            time_str = f"{target_time:.4f}" if is_reached else "-"
-            acc_str = f"{final_acc:.4f}"
-            round_str = f"{target_round}" if is_reached else "-"
+for (folder, is_iid, number), values in summary.items():
+    count = values['count']
 
-            print(f"{model_name:<20} {ai_idx:<10} {reach_status:<10} {time_str:<20} {acc_str:<15} {round_str:<10}")
+    # 计算平均值
+    avg_80_round = np.mean(values['80_rounds']) if values['80_rounds'] else None
+    avg_80_time = np.mean(values['80_times']) if values['80_times'] else None
 
-    print("=" * 80)
-    print(f"📝 结果打印完成！当前时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print("=" * 80)
+    avg_85_round = np.mean(values['85_rounds']) if values['85_rounds'] else None
+    avg_85_time = np.mean(values['85_times']) if values['85_times'] else None
 
+    avg_90_round = np.mean(values['90_rounds']) if values['90_rounds'] else None
+    avg_90_time = np.mean(values['90_times']) if values['90_times'] else None
 
-# ===================== 执行程序 =====================
-if __name__ == "__main__":
-    print_time_to_target()
+    # 格式化输出
+    print(f"{folder:<10} {is_iid:<10} {number:<10} {count:<8} "
+          f"{f'{avg_80_round:.2f}':>12} {f'{avg_80_time:.2f}' if avg_80_time else '-':>15} "
+          f"{f'{avg_85_round:.2f}':>12} {f'{avg_85_time:.2f}' if avg_85_time else '-':>15} "
+          f"{f'{avg_90_round:.2f}':>12} {f'{avg_90_time:.2f}' if avg_90_time else '-':>15}")
+
+# 第四步：可选 - 生成每个AI的详细统计（如果需要）
+print("\n" + "=" * 120)
+print("每个AI的详细时间统计（可选）：")
+print("=" * 120)
+
+# 按需启用：如果需要查看每个AI的详细时间统计，取消下面的注释
+"""
+for folder in target_folders:
+    folder_path = os.path.join(root_directory, folder)
+    if not os.path.isdir(folder_path):
+        continue
+
+    pkl_files = [f for f in os.listdir(folder_path) if f.endswith('.pkl')]
+    for filename in sorted(pkl_files)[:K]:  # 只处理前K个文件
+        filepath = os.path.join(root_directory, folder, filename)
+        try:
+            with open(filepath, 'rb') as f:
+                data = pickle.load(f)
+
+            print(f"\n文件: {folder}/{filename}")
+            # 遍历所有AI
+            num_ais = len(data.get('global_round_accuracies', []))
+            for ai_idx in range(num_ais):
+                try:
+                    round_times = data['global_round_times'][ai_idx]
+                    round_accs = data['global_round_accuracies'][ai_idx]
+
+                    # 转换为float
+                    round_times_float = [t.item() if isinstance(t, torch.Tensor) else float(t) for t in round_times]
+                    round_accs_float = [a.item() if isinstance(a, torch.Tensor) else float(a) for a in round_accs]
+
+                    # 查找各精度点
+                    round_80 = next((i + 1 for i, acc in enumerate(round_accs_float) if acc >= 80), None)
+                    round_85 = next((i + 1 for i, acc in enumerate(round_accs_float) if acc >= 85), None)
+                    round_90 = next((i + 1 for i, acc in enumerate(round_accs_float) if acc >= 90), None)
+
+                    # 计算累计时间
+                    time_80 = sum(round_times_float[:round_80]) if (round_80 and round_80 <= len(round_times_float)) else None
+                    time_85 = sum(round_times_float[:round_85]) if (round_85 and round_85 <= len(round_times_float)) else None
+                    time_90 = sum(round_times_float[:round_90]) if (round_90 and round_90 <= len(round_times_float)) else None
+
+                    print(f"  AI {ai_idx}: "
+                          f"80%精度(轮数:{round_80}, 时间:{time_80:.2f}s) | "
+                          f"85%精度(轮数:{round_85}, 时间:{time_85:.2f}s) | "
+                          f"90%精度(轮数:{round_90}, 时间:{time_90:.2f}s)")
+
+                except KeyError as e:
+                    print(f"  AI {ai_idx}: 缺失键 {e}")
+                except Exception as e:
+                    print(f"  AI {ai_idx}: 错误 {e}")
+
+        except Exception as e:
+            print(f"  无法解析文件: {e}")
+
+except Exception as e:
+    pass
+"""
