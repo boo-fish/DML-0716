@@ -246,7 +246,7 @@ def main():
         test_accuracies.append(accuracies_per_round[-1])
 
     # 保存结果（保持原有逻辑）
-    save_dir = 'results/RAMFL'
+    save_dir = 'results-mnist-Final-tao/RAMFL'
     os.makedirs(save_dir, exist_ok=True)
     filename = os.path.join(save_dir, f'Ai_{Ai}_P_{p_value}_epoch_{epoch_value}_is_iid_{args.iid}_local_alpha_{alpha}_Final_Acc_{accuracies_per_round[-1]:.4f}_{formatted_time}.pkl')
     data_to_save = {

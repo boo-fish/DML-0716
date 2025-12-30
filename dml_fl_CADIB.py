@@ -269,7 +269,7 @@ def main():
         test_accuracies.append(accuracies_per_round[-1])
 
     # 构造保存路径
-    save_dir = 'results/CADIB'
+    save_dir = 'results-mnist-Final-tao/CADIB'
     os.makedirs(save_dir, exist_ok=True)  # 如果不存在则创建
     # 构造文件名（注意添加 save_dir 前缀）
     filename = os.path.join(save_dir,f'Ai_{Ai}_P_{p_value}_epoch_{epoch_value}_is_iid_{args.iid}_local_alpha_{alpha}_Final_Acc_{accuracies_per_round[-1]:.4f}_{formatted_time}.pkl')
