@@ -65,7 +65,7 @@ print("=" * 120)
 header = (f"{'文件夹':<10} {'分组(isIID,数字)':<20} {'文件名':<60} "
           f"{'round_80':>10} {'time_80(s)':>12} "
           f"{'round_85':>10} {'time_85(s)':>12} "
-          f"{'round_90':>10} {'time_90(s)':>12}")
+          f"{'round_92':>10} {'time_92(s)':>12}")
 print(header)
 print("=" * len(header))
 
@@ -104,10 +104,10 @@ for folder, groups in grouped_files.items():
                     else:
                         round_times_float.append(float(t))
 
-                # 查找首次达到80、85、90精度的轮数（轮数从1开始）
+                # 查找首次达到80、85、92精度的轮数（轮数从1开始）
                 round_80 = next((i + 1 for i, acc in enumerate(round_accuracies_float) if acc >= 80), None)
                 round_85 = next((i + 1 for i, acc in enumerate(round_accuracies_float) if acc >= 85), None)
-                round_90 = next((i + 1 for i, acc in enumerate(round_accuracies_float) if acc >= 90), None)
+                round_92 = next((i + 1 for i, acc in enumerate(round_accuracies_float) if acc >= 92), None)
 
                 # 计算达到对应精度的累计时间
                 time_80 = None
@@ -119,15 +119,15 @@ for folder, groups in grouped_files.items():
                 if round_85 and round_85 <= len(round_times_float):
                     time_85 = sum(round_times_float[:round_85])
 
-                time_90 = None
-                if round_90 and round_90 <= len(round_times_float):
-                    time_90 = sum(round_times_float[:round_90])
+                time_92 = None
+                if round_92 and round_92 <= len(round_times_float):
+                    time_92 = sum(round_times_float[:round_92])
 
                 # 格式化输出
                 print(f"{folder:<10} {group_label:<20} {filename:<60} "
                       f"{str(round_80):>10} {f'{time_80:.2f}' if time_80 else '-':>12} "
                       f"{str(round_85):>10} {f'{time_85:.2f}' if time_85 else '-':>12} "
-                      f"{str(round_90):>10} {f'{time_90:.2f}' if time_90 else '-':>12}")
+                      f"{str(round_92):>10} {f'{time_92:.2f}' if time_92 else '-':>12}")
 
             except Exception as e:
                 print(f"{folder:<10} {group_label:<20} {filename:<60} "
@@ -151,8 +151,8 @@ for folder, groups in grouped_files.items():
         summary[group_key]['80_times'] = []
         summary[group_key]['85_rounds'] = []
         summary[group_key]['85_times'] = []
-        summary[group_key]['90_rounds'] = []
-        summary[group_key]['90_times'] = []
+        summary[group_key]['92_rounds'] = []
+        summary[group_key]['92_times'] = []
         summary[group_key]['count'] = 0
 
         for filename in files_to_process:
@@ -173,15 +173,15 @@ for folder, groups in grouped_files.items():
                 # 获取达到各精度的轮数和累计时间
                 round_80 = next((i + 1 for i, acc in enumerate(round_accuracies_float) if acc >= 80), None)
                 round_85 = next((i + 1 for i, acc in enumerate(round_accuracies_float) if acc >= 85), None)
-                round_90 = next((i + 1 for i, acc in enumerate(round_accuracies_float) if acc >= 90), None)
+                round_92 = next((i + 1 for i, acc in enumerate(round_accuracies_float) if acc >= 92), None)
 
                 # 计算累计时间
                 time_80 = sum(round_times_float[:round_80]) if (
                             round_80 and round_80 <= len(round_times_float)) else None
                 time_85 = sum(round_times_float[:round_85]) if (
                             round_85 and round_85 <= len(round_times_float)) else None
-                time_90 = sum(round_times_float[:round_90]) if (
-                            round_90 and round_90 <= len(round_times_float)) else None
+                time_92 = sum(round_times_float[:round_92]) if (
+                            round_92 and round_92 <= len(round_times_float)) else None
 
                 # 收集有效数据
                 if round_80 and time_80:
@@ -190,9 +190,9 @@ for folder, groups in grouped_files.items():
                 if round_85 and time_85:
                     summary[group_key]['85_rounds'].append(round_85)
                     summary[group_key]['85_times'].append(time_85)
-                if round_90 and time_90:
-                    summary[group_key]['90_rounds'].append(round_90)
-                    summary[group_key]['90_times'].append(time_90)
+                if round_92 and time_92:
+                    summary[group_key]['92_rounds'].append(round_92)
+                    summary[group_key]['92_times'].append(time_92)
 
                 summary[group_key]['count'] += 1
 
@@ -203,7 +203,7 @@ for folder, groups in grouped_files.items():
 header_summary = (f"{'文件夹':<10} {'isIID':<10} {'数字':<10} {'样本数':<8} "
                   f"{'平均round_80':>12} {'平均time_80(s)':>15} "
                   f"{'平均round_85':>12} {'平均time_85(s)':>15} "
-                  f"{'平均round_90':>12} {'平均time_90(s)':>15}")
+                  f"{'平均round_92':>12} {'平均time_92(s)':>15}")
 print(header_summary)
 print("=" * len(header_summary))
 
@@ -217,14 +217,14 @@ for (folder, is_iid, number), values in summary.items():
     avg_85_round = np.mean(values['85_rounds']) if values['85_rounds'] else None
     avg_85_time = np.mean(values['85_times']) if values['85_times'] else None
 
-    avg_90_round = np.mean(values['90_rounds']) if values['90_rounds'] else None
-    avg_90_time = np.mean(values['90_times']) if values['90_times'] else None
+    avg_92_round = np.mean(values['92_rounds']) if values['92_rounds'] else None
+    avg_92_time = np.mean(values['92_times']) if values['92_times'] else None
 
     # 格式化输出
     print(f"{folder:<10} {is_iid:<10} {number:<10} {count:<8} "
           f"{f'{avg_80_round:.2f}':>12} {f'{avg_80_time:.2f}' if avg_80_time else '-':>15} "
           f"{f'{avg_85_round:.2f}':>12} {f'{avg_85_time:.2f}' if avg_85_time else '-':>15} "
-          f"{f'{avg_90_round:.2f}':>12} {f'{avg_90_time:.2f}' if avg_90_time else '-':>15}")
+          f"{f'{avg_92_round:.2f}':>12} {f'{avg_92_time:.2f}' if avg_92_time else '-':>15}")
 
 # 第四步：可选 - 生成每个AI的详细统计（如果需要）
 print("\n" + "=" * 120)
@@ -260,17 +260,17 @@ for folder in target_folders:
                     # 查找各精度点
                     round_80 = next((i + 1 for i, acc in enumerate(round_accs_float) if acc >= 80), None)
                     round_85 = next((i + 1 for i, acc in enumerate(round_accs_float) if acc >= 85), None)
-                    round_90 = next((i + 1 for i, acc in enumerate(round_accs_float) if acc >= 90), None)
+                    round_92 = next((i + 1 for i, acc in enumerate(round_accs_float) if acc >= 92), None)
 
                     # 计算累计时间
                     time_80 = sum(round_times_float[:round_80]) if (round_80 and round_80 <= len(round_times_float)) else None
                     time_85 = sum(round_times_float[:round_85]) if (round_85 and round_85 <= len(round_times_float)) else None
-                    time_90 = sum(round_times_float[:round_90]) if (round_90 and round_90 <= len(round_times_float)) else None
+                    time_92 = sum(round_times_float[:round_92]) if (round_92 and round_92 <= len(round_times_float)) else None
 
                     print(f"  AI {ai_idx}: "
                           f"80%精度(轮数:{round_80}, 时间:{time_80:.2f}s) | "
                           f"85%精度(轮数:{round_85}, 时间:{time_85:.2f}s) | "
-                          f"90%精度(轮数:{round_90}, 时间:{time_90:.2f}s)")
+                          f"92%精度(轮数:{round_92}, 时间:{time_92:.2f}s)")
 
                 except KeyError as e:
                     print(f"  AI {ai_idx}: 缺失键 {e}")
