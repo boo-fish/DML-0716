@@ -187,4 +187,4 @@ for ai_idx in range(num_ais):
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     save_path = os.path.join(save_dir, f'2d-mnist_epoch_acc_with_CI_{current_time}.pdf')
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
-    print(f"✅ 图片已保存至: {save_path}")
+    print(f"✅ 图片已保存至: { save_path}")
