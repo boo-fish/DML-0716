@@ -348,5 +348,5 @@ def main():
 if __name__ == "__main__":
     mp.set_start_method('spawn')  # 设置多进程启动方式
     final_results = main()  # 接收返回的结果
-    print("OnlineFL训练完成，最终结果：", final_results)
+    print("OnlineFL已训练完成，最终结果：", final_results)
 
