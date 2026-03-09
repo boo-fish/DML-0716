@@ -1,0 +1,235 @@
+import matplotlib
+import os
+from utils.sampling_benchmark import mnist_noniid_dirichlet
+matplotlib.use('TkAgg')
+import copy
+import numpy as np
+from torchvision import datasets, transforms
+import torch
+import time
+from network_environment import NetworkEnvironment
+from utils.sampling_benchmark import mnist_iid
+from utils.options import args_parser
+from models.Update_benchmark import LocalUpdate
+from models.Nets import MLP, CNNMnist, CNNCifar
+from models.Fed import FedAvg
+from models.test import test_img
+import math
+import pickle
+import torch.multiprocessing as mp  # 导入多进程模块，用于并行训练
+from dml_确定节点流量分配 import GetFlow
+
+def client_train(args, dataset, idxs, w_glob, client_data_size, worker_capacity, client_id):
+    """客户端训练函数，考虑客户端容量"""
+    client_start_time = time.time()
+    idxs = list(idxs)
+    data_size = len(idxs)  # 客户端本地数据量
+
+    # 初始化w为全局模型参数（关键：确保w始终有值）
+    w = w_glob.copy()
+    loss = 0.0  # 初始化损失
+
+    # 根据参数创建模型
+    if args.model == 'cnn' and args.dataset == 'cifar':
+        net = CNNCifar(args=args).to(args.device)
+    elif args.model == 'cnn' and args.dataset == 'mnist':
+        net = CNNMnist(args=args).to(args.device)
+    elif args.model == 'mlp':
+        img_size = dataset[0][0].shape
+        len_in = 1
+        for x in img_size:
+            len_in *= x
+        net = MLP(dim_in=len_in, dim_hidden=200, dim_out=args.num_classes).to(args.device)
+    else:
+        raise ValueError('Error: unrecognized model')
+    net.load_state_dict(w_glob)
+
+    # 若客户端无数据，直接返回全局模型和默认损失
+    if data_size == 0:
+        client_end_time = time.time()
+        client_elapsed_time = client_end_time - client_start_time
+        return w, loss, client_elapsed_time, client_id
+
+    # 计算客户端容量对应的样本数
+    sample, label = dataset[0]
+    sample_size = sample.element_size() * sample.nelement() / (1024 * 1024)
+    label_size = 4 / (1024 * 1024)
+    num_samples_in_capacity = int(worker_capacity[client_id] / (sample_size + label_size))
+
+    start_idx = 0
+    batch_num = 0
+    while start_idx < data_size:
+        remaining_samples = data_size - start_idx
+        end_idx = start_idx + min(num_samples_in_capacity, remaining_samples)
+        local_idxs = idxs[start_idx:end_idx]
+
+        # 执行本地训练，更新w和loss
+        local = LocalUpdate(args=args, dataset=dataset, idxs=local_idxs, client_data_size=num_samples_in_capacity)
+        w, loss = local.train(net=net)  # 覆盖初始化的w和loss
+        net.load_state_dict(w)
+        start_idx = end_idx
+        batch_num += 1
+
+    client_end_time = time.time()
+    client_elapsed_time = client_end_time - client_start_time
+    torch.cuda.empty_cache()
+    return w, loss, client_elapsed_time, client_id
+
+def main():
+    args = args_parser()
+    alpha = args.alpha
+    p_value = args.p
+    ai = args.ai
+    epoch_value = args.epochs
+    GetFlow(p=p_value, ai=ai)
+
+    args.device = torch.device('cuda:{}'.format(args.gpu) if torch.cuda.is_available() and args.gpu != -1 else 'cpu')
+
+    # 加载 Ai_actdata.pkl 文件
+    with open('Ai_actdata.pkl', 'rb') as f:
+        Ai_actdata = pickle.load(f)
+
+    # 存储测试集准确率
+    test_accuracies = []
+    # 存储每个 Ai 下的全局轮次准确率
+    global_round_accuracies = []
+    # 存储每个 Ai 下每一轮全局训练的时间
+    global_round_times = []
+
+    # 使用 Ai_actdata.pkl 文件中列表元素的个数，进行限定循环轮数
+    for round_idx, (Ai, training_sizes) in enumerate(Ai_actdata):
+
+        # load dataset and split users
+        if args.dataset =='mnist':
+            trans_mnist = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
+            dataset_train = datasets.MNIST('../data/mnist/', train=True, download=True, transform=trans_mnist)
+            dataset_test = datasets.MNIST('../data/mnist/', train=False, download=True, transform=trans_mnist)
+            # sample users
+            if args.iid:
+                print("iid")
+                # 将 round_idx 传递给 mnist_iid 函数
+                dict_users = mnist_iid(dataset_train, args.num_users, round_idx)
+
+            else:
+                print("non-iid,D 分布")
+                dict_users = mnist_noniid_dirichlet(dataset_train, args.num_users, round_idx, alpha=alpha)
+
+        else:
+            exit('Error: unrecognized dataset')
+
+        # 打印训练集总元素的大小和所占用的存储空间大小
+        total_elements = len(dataset_train)
+        # 估算占用空间大小
+        sample, label = dataset_train[0]
+        sample_size = sample.element_size() * sample.nelement() / (1024 * 1024)  # 转换为兆
+        label_size = 4 / (1024 * 1024)  # 其标签为整数，整数的字节大小是固定的（通常为 4 字节）
+
+        img_size = dataset_train[0][0].shape
+
+        # build model
+        if args.model == 'cnn' and args.dataset == 'cifar':
+            net_glob = CNNCifar(args=args).to(args.device)
+        elif args.model == 'cnn' and args.dataset =='mnist':
+            net_glob = CNNMnist(args=args).to(args.device)
+        elif args.model =='mlp':
+            len_in = 1
+            for x in img_size:
+                len_in *= x
+            net_glob = MLP(dim_in=len_in, dim_hidden=200, dim_out=args.num_classes).to(args.device)
+        else:
+            exit('Error: unrecognized model')
+        net_glob.train()
+
+        # copy weights
+        w_glob = net_glob.state_dict()
+
+        if args.all_clients:
+            # print("Aggregation over all clients")
+            w_locals = [w_glob for i in range(args.num_users)]
+
+        client_dataset_sizes = {}
+        for client_idx, client_idxs in dict_users.items():
+            client_dataset_sizes[client_idx] = math.floor(len(client_idxs) * (sample_size + label_size))
+
+        # 从 worker_capacity.pkl 文件中读取每个客户端的计算容量
+        with open('worker_capacity.pkl', 'rb') as f:
+            worker_capacity = pickle.load(f)
+
+        # 全局训练轮次
+        accuracies_per_round = []
+        times_per_round = []
+        for epoch in range(args.epochs):
+            # 记录全局训练开始时间
+            global_start_time = time.time()
+            w_locals = []
+            loss_locals = []
+            m = max(int(args.frac * args.num_users), 1)
+            idxs_users = np.random.choice(range(args.num_users), m, replace=False)
+
+            with mp.Pool(processes=m) as pool:  # 使用 with 语句确保资源正确释放
+                results = pool.starmap(client_train, [(args, dataset_train, dict_users[idx], w_glob,
+                                                       client_dataset_sizes[idx], worker_capacity, idx)
+                                                      for idx in idxs_users])
+
+            # 存储每个客户端的处理时间
+            client_processing_times = {}
+            for w, loss, elapsed_time, client_id in results:
+                if w is not None and loss is not None:
+                    w_locals.append(copy.deepcopy(w))
+                    loss_locals.append(copy.deepcopy(loss))
+                    # 根据客户端计算能力调整训练时间
+                    adjusted_time = elapsed_time / worker_capacity[client_id]
+                    client_processing_times[client_id] = adjusted_time
+
+            # 聚合权重
+            w_glob = FedAvg(w_locals)
+
+            # 更新全局模型
+            net_glob.load_state_dict(w_glob)
+
+            # 找出处理时间最长的客户端，作为本轮全局训练的时间
+            max_client_time = max(client_processing_times.values()) if client_processing_times else 0
+
+            # 记录全局训练结束时间
+            global_end_time = time.time()
+            # 计算全局训练时间
+            global_elapsed_time = global_end_time - global_start_time
+            # 使用调整后的最大客户端处理时间作为全局训练时间
+            global_elapsed_time = max_client_time
+
+            # 测试全局模型
+            acc_test, loss_test = test_img(net_glob, dataset_test, args)
+
+            times_per_round.append(global_elapsed_time)
+            print(f"Round {epoch + 1}, Test Accuracy: {acc_test}, Loss: {loss_test}, Global training time: {global_elapsed_time}")
+            # 添加测试准确率到列表
+            accuracies_per_round.append(acc_test)
+            # 手动释放 CUDA 缓存
+            torch.cuda.empty_cache()
+
+        # 存储每个 Ai 下的全局轮次准确率
+        global_round_accuracies.append(accuracies_per_round)
+        # 存储每个 Ai 下每一轮全局训练的时间
+        global_round_times.append(times_per_round)
+        # 存储测试集准确率
+        test_accuracies.append(accuracies_per_round[-1])
+
+    # 构造保存路径
+    save_dir = 'saving/0918/基准方法'
+    os.makedirs(save_dir, exist_ok=True)  # 如果不存在则创建
+    # 构造文件名（注意添加 save_dir 前缀）
+    filename = os.path.join(save_dir,f'Ai_{Ai}_P_{p_value}_epoch_{epoch_value}_is_iid_{args.iid}_local_alpha_{alpha}.pkl')
+    # 保存数据
+    data_to_save = {
+        'ais': [x[0] for x in Ai_actdata],
+        'test_accuracies': test_accuracies,
+        'global_round_accuracies': global_round_accuracies,
+        'global_round_times': global_round_times
+    }
+    with open(filename, 'wb') as f:
+        pickle.dump(data_to_save, f)
+
+
+if __name__ == "__main__":
+    mp.set_start_method('spawn')  # 设置多进程启动方式
+    main()
