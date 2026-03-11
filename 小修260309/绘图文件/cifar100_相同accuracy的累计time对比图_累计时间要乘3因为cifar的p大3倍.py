@@ -22,9 +22,9 @@ lr = args.lr
 epoch_value = args.epochs
 
 # 核心配置
-TARGET_ACCURACY = 55  # 目标准确率
-ROOT_DIR = r'D:\project\DML-0716\results-全50准确率'  # 数据根目录（包含DML/benchmark/RAMFL子文件夹）
-SAVE_DIR = r'D:\project\DML-0716\大修实验图\3种方法到达目标准确率所需时间对比图'  # 图片保存目录
+TARGET_ACCURACY = 32  # 目标准确率
+ROOT_DIR = r'D:\project\DML-0716\小修260309\绘图所需的数据\相同准确率下的收敛时间对比数据'  # 数据根目录（包含DML/benchmark/RAMFL子文件夹）
+SAVE_DIR = r'D:\project\DML-0716\小修260309\绘图文件\收敛时间对比图'  # 图片保存目录
 os.makedirs(SAVE_DIR, exist_ok=True)
 
 # 自定义颜色（对应DML、benchmark、RAMFL）
@@ -68,7 +68,7 @@ def classify_data(data_dict, method_name):
         # 从文件名提取特征（兼容原文件名格式：is_iid_True/False 或 isIID_True/False）
         is_iid = 'is_iid_True' in filename or 'isIID_True' in filename
         is_noniid = 'is_iid_False' in filename or 'isIID_False' in filename
-        is_h10 = '_P_10_' in filename or '_24_10_' in filename  # 匹配H=10（P=10/H=10）
+        is_h10 = '_P_10_' in filename or '_30_10_' in filename  # 匹配H=10（P=10/H=10）
 
         if is_iid and is_h10:
             classified['iid_10'] = data
@@ -111,9 +111,9 @@ def truncate_to_target(times, accuracies, target):
 
 # ===================== 加载并分类数据 =====================
 # 读取三个方法的所有数据
-dml_data_dict = load_data_from_folder(os.path.join(ROOT_DIR, 'DML'))
-benchmark_data_dict = load_data_from_folder(os.path.join(ROOT_DIR, 'benchmark'))
-ramfl_data_dict = load_data_from_folder(os.path.join(ROOT_DIR, 'RAMFL'))
+dml_data_dict = load_data_from_folder(os.path.join(ROOT_DIR, 'DML_cifar100'))
+benchmark_data_dict = load_data_from_folder(os.path.join(ROOT_DIR, 'Bench_cifar100'))
+ramfl_data_dict = load_data_from_folder(os.path.join(ROOT_DIR, 'RAMFL_cifar100'))
 
 # 兼容：如果benchmark数据在根目录（无benchmark子文件夹），从根目录读取local相关文件
 if not benchmark_data_dict and 'local' in [f.split('_')[0] for f in os.listdir(ROOT_DIR) if f.endswith('.pkl')]:
@@ -147,8 +147,8 @@ def plot_combined_chart(data_dict, ai_idx):
 
     # 定义子图配置（统一标题文本，和参考代码完全一致）
     subplot_configs = [
-        {'ax': ax1, 'plot_type': 'iid', 'title': '(a) CIFAR-10 dataset (IID data)'},
-        {'ax': ax2, 'plot_type': 'noniid', 'title': '(b) CIFAR-10 dataset (non-IID data)'}
+        {'ax': ax1, 'plot_type': 'iid', 'title': '(a) CIFAR-100 dataset (IID data)'},
+        {'ax': ax2, 'plot_type': 'noniid', 'title': '(b) CIFAR-100 dataset (non-IID data)'}
     ]
 
     # 遍历绘制每个子图
@@ -246,7 +246,7 @@ def plot_combined_chart(data_dict, ai_idx):
             # 设置子图样式，和参考代码完全对齐
             ax.set_xlabel('Time (seconds)', fontsize=12)
             ax.set_ylabel('Accuracy (%)', fontsize=12)
-            ax.set_ylim(10,60)
+            ax.set_ylim(5,35)
             ax.set_xlim(0, max_time * 1.05 if max_time > 0 else 1)
 
             # 美化边框和刻度，和参考代码一致
