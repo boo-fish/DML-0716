@@ -47,7 +47,7 @@ def load_group_pkls(method_dir, h, is_iid):
     print_separator(f"开始加载数据 | 方法: {method_dir} | 节点数H: {h} | IID: {is_iid}")
 
     # 拼接方法目录路径
-    full_dir = os.path.join('../绘图所需的数据/', method_dir)
+    full_dir = os.path.join('../绘图所需的数据/相同轮数下的准确率对比数据/', method_dir)
     print(f"🔍 查找目录: {full_dir}")
 
     if not os.path.exists(full_dir):
@@ -150,20 +150,20 @@ if __name__ == "__main__":
 
     method_configs = [
         # Proposed (DML) - 先H=10，后H=5（颜色调换）
-        ('Proposed (H=10)', 'DML', '#1515ff', 10),
-        ('Proposed (H=5)', 'DML', '#ff7f50', 5),
+        ('Proposed (H=10)', 'DML_cifar100', '#1515ff', 10),
+        ('Proposed (H=5)', 'DML_cifar100', '#ff7f50', 5),
         # Conventional FL (benchmark) - 先H=10，后H=5（颜色调换）
-        ('Conventional FL (H=10)', 'benchmark', '#ff0000', 10),
-        ('Conventional FL (H=5)', 'benchmark', '#04bdfb', 5),
+        ('Conventional FL (H=10)', 'Bench_cifar100', '#ff0000', 10),
+        ('Conventional FL (H=5)', 'Bench_cifar100', '#04bdfb', 5),
         # RAMFL - 先H=10，后H=5（颜色调换）
-        ('RAMFL (H=10)', 'RAMFL', '#9370db', 10),
-        ('RAMFL (H=5)', 'RAMFL', '#32cd32', 5),
+        ('RAMFL (H=10)', 'RAMFL_cifar100', '#9370db', 10),
+        ('RAMFL (H=5)', 'RAMFL_cifar100', '#32cd32', 5),
     ]
 
     # 数据分布配置：(是否IID, 子图标题)
     data_distributions = [
-        (True, '(a) CIFAR-10 dataset (IID data)'),
-        (False, '(b) CIFAR-10 dataset (non-IID data)'),
+        (True, '(a) CIFAR-100 dataset (IID data)'),
+        (False, '(b) CIFAR-100 dataset (non-IID data)'),
     ]
 
     # 打印方法配置信息
@@ -210,21 +210,21 @@ if __name__ == "__main__":
 
                 print(f"✅ 已绘制 {method_name} 曲线")
 
-        # 子图样式配置（固定x轴范围为0~51）
-        ax.set_xlabel('Epoch', fontsize=12)
-        ax.set_ylabel('Accuracy (%)', fontsize=12)
-        ax.set_ylim(10, 70)  # 准确率范围
-        ax.set_xlim(0, GLOBAL_EPOCH + 1)  # 固定x轴为0~51（适配前50个epoch）
-        # 图例顺序与绘制顺序一致（先H=10后H=5）
-        ax.legend(fontsize=10, loc="lower right", bbox_to_anchor=(1, 0))
-        # 子图标题（底部）
-        ax.text(0.5, -0.15, subplot_title,
+            # 子图样式配置（固定x轴范围为0~51）
+            ax.set_xlabel('Epoch', fontsize=12)
+            ax.set_ylabel('Accuracy (%)', fontsize=12)
+            ax.set_ylim(0, 60)  # 准确率范围
+            ax.set_xlim(0, GLOBAL_EPOCH + 1)  # 固定x轴为0~51（适配前50个epoch）
+            # 图例顺序与绘制顺序一致（先H=10后H=5）
+            ax.legend(fontsize=10, loc="lower right", bbox_to_anchor=(1, 0))
+            # 子图标题（底部）
+            ax.text(0.5, -0.15, subplot_title,
                 fontsize=14, ha='center', va='top', transform=ax.transAxes)
-        # 美化边框
-        for spine in ax.spines.values():
-            spine.set_linewidth(1)
-            spine.set_color('black')
-        ax.tick_params(axis='both', width=2, length=6)
+            # 美化边框
+            for spine in ax.spines.values():
+                spine.set_linewidth(1)
+                spine.set_color('black')
+            ax.tick_params(axis='both', width=2, length=6)
 
     # 布局调整与保存
     print_separator("保存图表文件")
