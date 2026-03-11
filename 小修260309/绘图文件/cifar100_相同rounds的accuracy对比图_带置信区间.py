@@ -13,7 +13,7 @@ from datetime import datetime
 
 # --------------- 全局配置（核心新增：固定绘制前50个epoch）---------------
 GLOBAL_EPOCH = 100  # 所有方法只绘制前50个epoch
-save_dir = r'./大修实验图/CIFAR10/'
+save_dir = r'./小修实验图/'
 os.makedirs(save_dir, exist_ok=True)
 
 # --------------- 工具函数 ---------------
@@ -47,7 +47,7 @@ def load_group_pkls(method_dir, h, is_iid):
     print_separator(f"开始加载数据 | 方法: {method_dir} | 节点数H: {h} | IID: {is_iid}")
 
     # 拼接方法目录路径
-    full_dir = os.path.join('../results-cifar-合集-tao', method_dir)
+    full_dir = os.path.join('../绘图所需的数据/', method_dir)
     print(f"🔍 查找目录: {full_dir}")
 
     if not os.path.exists(full_dir):
@@ -144,7 +144,7 @@ def compute_mean_ci(data_list):
 
 # --------------- 主程序开始 ---------------
 if __name__ == "__main__":
-    print_separator("程序启动 | 开始绘制CIFAR10实验曲线图")
+    print_separator("程序启动 | 开始绘制CIFAR100实验曲线图")
     print(f"📅 当前时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"⚙️  全局配置 | 绘制Epoch数: {GLOBAL_EPOCH} | 保存目录: {save_dir}")
 
@@ -231,7 +231,7 @@ if __name__ == "__main__":
     plt.tight_layout()
     plt.subplots_adjust(bottom=0.22, wspace=0.3)
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    save_path = os.path.join(save_dir, f'2d-cifar_epoch_acc_with_CI_{current_time}.pdf')
+    save_path = os.path.join(save_dir, f'2d-CIFAR100_epoch_acc_with_CI_{current_time}.pdf')
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     print(f"✅ 图片已成功保存至: {save_path}")
     print(f"📊 文件信息 | DPI: 300 | 格式: PDF | 保存目录: {save_dir}")
