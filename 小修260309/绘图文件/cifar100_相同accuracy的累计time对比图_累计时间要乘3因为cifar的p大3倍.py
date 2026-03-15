@@ -22,7 +22,7 @@ lr = args.lr
 epoch_value = args.epochs
 
 # 核心配置
-TARGET_ACCURACY = 32  # 目标准确率
+TARGET_ACCURACY = 50  # 目标准确率
 ROOT_DIR = r'D:\project\DML-0716\小修260309\绘图所需的数据\相同准确率下的收敛时间对比数据'  # 数据根目录（包含DML/benchmark/RAMFL子文件夹）
 SAVE_DIR = r'D:\project\DML-0716\小修260309\绘图文件\收敛时间对比图'  # 图片保存目录
 os.makedirs(SAVE_DIR, exist_ok=True)
@@ -171,8 +171,8 @@ def plot_combined_chart(data_dict, ai_idx):
             # 截断数据到目标准确率
             dml_times, dml_accs = truncate_to_target(dml_times, dml_accs, TARGET_ACCURACY)
             if dml_times:
-                plot_data.append({'Time': dml_times, 'Accuracy': dml_accs, 'Model': 'DML (Proposed)'})
-                method_names.append('DML (Proposed)')
+                plot_data.append({'Time': dml_times, 'Accuracy': dml_accs, 'Model': 'Proposed'})
+                method_names.append('Proposed')
 
         # 2. benchmark (Conventional FL)
         method_data = data_dict['benchmark'].get(f'{plot_type}_10')
@@ -246,7 +246,7 @@ def plot_combined_chart(data_dict, ai_idx):
             # 设置子图样式，和参考代码完全对齐
             ax.set_xlabel('Time (seconds)', fontsize=12)
             ax.set_ylabel('Accuracy (%)', fontsize=12)
-            ax.set_ylim(5,35)
+            ax.set_ylim(5,55)
             ax.set_xlim(0, max_time * 1.05 if max_time > 0 else 1)
 
             # 美化边框和刻度，和参考代码一致

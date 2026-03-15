@@ -13,7 +13,7 @@ from datetime import datetime
 
 # --------------- 全局配置（核心新增：固定绘制前50个epoch）---------------
 GLOBAL_EPOCH = 100  # 所有方法只绘制前50个epoch
-save_dir = r'./小修实验图/'
+save_dir = r'准确率的对比图/'
 os.makedirs(save_dir, exist_ok=True)
 
 # --------------- 工具函数 ---------------

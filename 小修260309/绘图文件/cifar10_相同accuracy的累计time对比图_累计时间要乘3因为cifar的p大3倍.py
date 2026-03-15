@@ -22,9 +22,9 @@ lr = args.lr
 epoch_value = args.epochs
 
 # 核心配置
-TARGET_ACCURACY = 55  # 目标准确率
-ROOT_DIR = r'D:\project\DML-0716\results-1220'  # 数据根目录（包含DML/benchmark/RAMFL子文件夹）
-SAVE_DIR = r'D:\project\DML-0716\大修实验图\3种方法到达目标准确率所需时间对比图'  # 图片保存目录
+TARGET_ACCURACY = 50  # 目标准确率
+ROOT_DIR = r'D:\project\DML-0716\results-全50准确率'  # 数据根目录（包含DML/benchmark/RAMFL子文件夹）
+SAVE_DIR = r'D:\project\DML-0716\小修260309\绘图文件\收敛时间对比图\cifar10'  # 图片保存目录
 os.makedirs(SAVE_DIR, exist_ok=True)
 
 # 自定义颜色（对应DML、benchmark、RAMFL）
@@ -89,7 +89,7 @@ def calculate_cumulative_time(times):
     cumulative = []
     total = 0
     for time in times:
-        total += convert_to_python(time)
+        total += convert_to_python(time) * 3
         cumulative.append(total)
     return cumulative
 
@@ -144,13 +144,11 @@ def plot_combined_chart(data_dict, ai_idx):
     """
     # 创建一行两列的子图（图表尺寸和参考代码保持一致）
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=FIG_SIZE)
-    # 总标题移到下方，y值设为负数（向下偏移），和参考代码风格对齐
-    fig.suptitle('CIFAR10', fontsize=18, fontweight='bold', y=-0.05)
 
     # 定义子图配置（统一标题文本，和参考代码完全一致）
     subplot_configs = [
-        {'ax': ax1, 'plot_type': 'iid', 'title': '(a) CIFAR-10 dataset (IID data)'},
-        {'ax': ax2, 'plot_type': 'noniid', 'title': '(b) CIFAR-10 dataset (non-IID data)'}
+        {'ax': ax1, 'plot_type': 'iid', 'title': '(a) CIFAR-100 dataset (IID data)'},
+        {'ax': ax2, 'plot_type': 'noniid', 'title': '(b) CIFAR-100 dataset (non-IID data)'}
     ]
 
     # 遍历绘制每个子图
@@ -173,8 +171,8 @@ def plot_combined_chart(data_dict, ai_idx):
             # 截断数据到目标准确率
             dml_times, dml_accs = truncate_to_target(dml_times, dml_accs, TARGET_ACCURACY)
             if dml_times:
-                plot_data.append({'Time': dml_times, 'Accuracy': dml_accs, 'Model': 'DML (Proposed)'})
-                method_names.append('DML (Proposed)')
+                plot_data.append({'Time': dml_times, 'Accuracy': dml_accs, 'Model': 'Proposed'})
+                method_names.append('Proposed')
 
         # 2. benchmark (Conventional FL)
         method_data = data_dict['benchmark'].get(f'{plot_type}_10')
@@ -248,7 +246,7 @@ def plot_combined_chart(data_dict, ai_idx):
             # 设置子图样式，和参考代码完全对齐
             ax.set_xlabel('Time (seconds)', fontsize=12)
             ax.set_ylabel('Accuracy (%)', fontsize=12)
-            ax.set_ylim(10,55)
+            ax.set_ylim(5,55)
             ax.set_xlim(0, max_time * 1.05 if max_time > 0 else 1)
 
             # 美化边框和刻度，和参考代码一致
