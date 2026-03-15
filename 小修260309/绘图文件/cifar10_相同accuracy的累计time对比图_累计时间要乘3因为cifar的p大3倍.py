@@ -22,8 +22,8 @@ lr = args.lr
 epoch_value = args.epochs
 
 # 核心配置
-TARGET_ACCURACY = 50  # 目标准确率
-ROOT_DIR = r'D:\project\DML-0716\results-全50准确率'  # 数据根目录（包含DML/benchmark/RAMFL子文件夹）
+TARGET_ACCURACY = 55  # 目标准确率
+ROOT_DIR = r'D:\project\DML-0716\小修260309\绘图所需的数据\cifar10-累计时间数据-大修期间的图例出错-现重画'  # 数据根目录（包含DML/benchmark/RAMFL子文件夹）
 SAVE_DIR = r'D:\project\DML-0716\小修260309\绘图文件\收敛时间对比图\cifar10'  # 图片保存目录
 os.makedirs(SAVE_DIR, exist_ok=True)
 
@@ -246,7 +246,7 @@ def plot_combined_chart(data_dict, ai_idx):
             # 设置子图样式，和参考代码完全对齐
             ax.set_xlabel('Time (seconds)', fontsize=12)
             ax.set_ylabel('Accuracy (%)', fontsize=12)
-            ax.set_ylim(5,55)
+            ax.set_ylim(10,60)
             ax.set_xlim(0, max_time * 1.05 if max_time > 0 else 1)
 
             # 美化边框和刻度，和参考代码一致

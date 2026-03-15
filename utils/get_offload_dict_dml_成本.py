@@ -32,8 +32,8 @@ def GetFlow(p=None, ai=None):
         num_servers = 10
         Ai_range = np.arange(ai, ai + 1)
         # alpha = 0.007
-        alpha = 0.7
-        # alpha = 0.4
+        # alpha = 0.7
+        alpha = 0.4
         num_simulations = 1
         num_workers = args.num_users
         num_clients = args.num_users
@@ -108,9 +108,9 @@ def GetFlow(p=None, ai=None):
         return None, None, None, None  # 异常时返回全None
 
 
-GetFlow(10,24)
-GetFlow(5,24)
-GetFlow(3,24)
+GetFlow(10,30)
+GetFlow(5,30)
+GetFlow(3,30)
 
 # if __name__ == "__main__":
     # p=3
