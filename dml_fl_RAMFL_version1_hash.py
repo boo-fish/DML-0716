@@ -11,7 +11,7 @@ import time
 from utils.network_environment import NetworkEnvironment
 from utils.options import args_parser
 from models.Update_benchmark import LocalUpdate
-from models.Nets import MLP, CNNMnist, CNNCifar, VGG11
+from models.Nets import MLP, CNNMnist, CNNCifar, VGG11, ResNet18Cifar
 from models.Fed import FedAvg
 from models.test import test_img
 import math
@@ -50,6 +50,11 @@ def client_train(args, dataset, idxs, server_w_param, client_data_size, worker_c
 
     elif args.model == 'vgg11' and args.dataset == 'mnist':
         net = VGG11(args=args).to(args.device)
+        
+    ###### 新增 ResNet-18 的逻辑 ######
+    elif args.model == 'resnet18' and args.dataset == 'cifar100':
+        # 注意：如果你的 args.num_classes 默认不是 100，这里可以直接强制传入 100
+        net = ResNet18Cifar(args=args, num_classes=100).to(args.device)
 
     elif args.model == 'mlp':
         img_size = dataset[0][0].shape
@@ -59,6 +64,7 @@ def client_train(args, dataset, idxs, server_w_param, client_data_size, worker_c
         net = MLP(dim_in=len_in, dim_hidden=200, dim_out=args.num_classes).to(args.device)
     else:
         raise ValueError('Error: unrecognized model')
+    
     net.load_state_dict(server_w_param)
 
     # 无数据客户端直接返回
@@ -118,6 +124,12 @@ def main():
     elif args.dataset == 'cifar10':
         target_accuracy = 55.0  # cifar10数据集目标准确率55%
         target_epoch = 100
+        
+    ###### DML小修0308 ######
+    elif args.dataset == 'cifar100':
+        target_accuracy = 45.0  # cifar100数据集目标准确率55%
+        target_epoch = 100
+        
     else:
         target_accuracy = 0.0  # 未知数据集默认值
         print(f"警告：未识别的数据集 {args.dataset}，未设置目标准确率")
@@ -162,6 +174,33 @@ def main():
                 dict_users = mnist_noniid_dirichlet(dataset_train, args.num_users, round_idx, alpha=alpha,
                                                       Ai_actdata=Ai_actdata, total_size=total_size)
 
+        elif args.dataset == 'cifar100':
+            # 1. 训练集 Transform（加入数据增强）
+            trans_cifar_train = transforms.Compose([
+                transforms.RandomCrop(32, padding=4),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761))
+            ])
+            # 2. 测试集 Transform（纯净转换）
+            trans_cifar_test = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761))
+            ])
+
+            # 3. 分别应用不同的 transform
+            dataset_train = datasets.CIFAR100('./data/cifar100', train=True, download=True, transform=trans_cifar_train)
+            dataset_test = datasets.CIFAR100('./data/cifar100', train=False, download=True, transform=trans_cifar_test)
+        
+            if args.iid:
+                print("iid")
+                dict_users = mnist_iid(dataset_train, args.num_users, round_idx, Ai_actdata=Ai_actdata,
+                                         total_size=total_size)
+            else:
+                print("non-iid")
+                dict_users = mnist_noniid_dirichlet(dataset_train, args.num_users, round_idx, alpha=alpha,
+                                                      Ai_actdata=Ai_actdata, total_size=total_size)
+        
         else:
             exit('Error: unrecognized dataset')
 
@@ -178,6 +217,12 @@ def main():
 
         elif args.model == 'vgg11' and args.dataset == 'mnist':
             net_glob = VGG11(args=args).to(args.device)
+            
+            
+        ###### 新增 ResNet-18 的逻辑 ######
+        elif args.model == 'resnet18' and args.dataset == 'cifar100':
+            # 注意：如果你的 args.num_classes 默认不是 100，这里可以直接强制传入 100
+            net_glob = ResNet18Cifar(args=args, num_classes=100).to(args.device)
 
         elif args.model == 'mlp':
             len_in = 1
@@ -264,10 +309,19 @@ def main():
             # 生成全局测试模型（所有服务器参数平均，保持原有测试逻辑）
             w_glob = copy.deepcopy(init_w)
             for key in w_glob.keys():
-                w_glob[key] = torch.zeros_like(w_glob[key])
+                # 1. 强制使用 float32 初始化零张量，避免累加时类型冲突
+                w_glob[key] = torch.zeros_like(w_glob[key], dtype=torch.float32)
+                
                 for s_id in range(SERVER_NUM):
-                    w_glob[key] += server_w[s_id][key]
-                w_glob[key] /= SERVER_NUM
+                    # 2. 累加时，确保加进来的 tensor 也是 float32
+                    w_glob[key] += server_w[s_id][key].to(torch.float32)
+                
+                # 3. 计算平均值
+                w_glob[key] = torch.div(w_glob[key], SERVER_NUM)
+                
+                # 4. 【关键修复】将计算完的张量类型，还原回 init_w 对应层原本的数据类型
+                # 这样 Float 类型的权重保持为 Float，Long 类型的 num_batches_tracked 会变回 Long
+                w_glob[key] = w_glob[key].to(init_w[key].dtype)
 
             # 测试全局模型
             net_glob.load_state_dict(w_glob)
@@ -281,7 +335,7 @@ def main():
 
             # 监测测试集准确率，达到目标则提前停止训练
             if acc_test > target_accuracy and epoch >= target_epoch:
-                print(f"Epoch{epoch} 🎉 测试集准确率 {acc_test:.2f} 达到目标准确率 {target_accuracy}，提前终止训练！")
+                print(f"Epoch{epoch} 测试集准确率 {acc_test:.2f} 达到目标准确率 {target_accuracy}，提前终止训练！")
 
                 # 立即保存当前轮次结果（替代原有的仅保存最后一轮）
                 accuracies_per_round.append(acc_test)
@@ -305,10 +359,13 @@ def main():
         global_round_times.append(times_per_round)
         test_accuracies.append(accuracies_per_round[-1])
 
-    # 保存结果
-    save_dir = 'results-mnist-Final-tao/RAMFL'
-    os.makedirs(save_dir, exist_ok=True)
-    filename = os.path.join(save_dir, f'{args.dataset}_{args.model}_{Ai}_{p_value}_epoch_{epoch_value}_isIID_{args.iid}_alpha_{alpha}_Final_Acc_{accuracies_per_round[-1]:.4f}_{formatted_time}.pkl')
+    # 构造保存路径
+    save_dir = f'results/RAMFL_{args.dataset}'
+    os.makedirs(save_dir, exist_ok=True)  # 如果不存在则创建
+    # 构造文件名（注意添加 save_dir 前缀）
+    filename = os.path.join(save_dir, f'{args.model}_isIID_{args.iid}_{Ai}_{p_value}_alpha_{alpha}_Acc_{accuracies_per_round[-1]:.4f}_{formatted_time}_epoch_{epoch_value}.pkl')
+    
+    
     data_to_save = {
         'ais': [x[0] for x in Ai_actdata],
         'test_accuracies': test_accuracies,

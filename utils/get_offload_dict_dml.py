@@ -39,6 +39,10 @@ def GetFlow(p=None, ai=None, dataset=None):
             alpha = 0.007
             left = 15
             print("alpha和左区间设置为:", alpha, left)
+        elif dataset == 'cifar100':
+            alpha = 0.007
+            left = 15
+            print("alpha和左区间设置为:", alpha, left)
         else:
             raise NotImplementedError
 
