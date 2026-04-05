@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.optimize import linprog, milp, LinearConstraint, Bounds
 
 
-def get_real_flow_mb_in_t_time(total_slots=None, onlineFL_T=None):
+def get_real_flow_mb_in_t_time(total_slots=None, onlineFL_T=None,p_value=20):
 
     # Basic Parameters Setting
     Num_slot = total_slots
@@ -16,7 +16,8 @@ def get_real_flow_mb_in_t_time(total_slots=None, onlineFL_T=None):
     Thre = 35
     K = 5
     F_min = 1
-    F_max = 20
+    # F_max = 20
+    F_max = F_min * p_value  # F_max is determined by F_min and p_value 
     A_min = 1
     A_max = 3
     cap_min = 1

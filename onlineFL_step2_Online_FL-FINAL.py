@@ -10,8 +10,7 @@ import numpy as np
 from torchvision import datasets, transforms
 import torch
 import time
-from utils.get_offload_dict_dml import GetFlow
-from utils.sampling_dml import mnist_iid, mnist_noniid_dirichlet, mnist_iid_by_training_sizes
+from utils.sampling_dml import mnist_noniid_by_training_sizes, mnist_iid_by_training_sizes
 from utils.options import args_parser
 from models.Update_dml import LocalUpdate
 from models.Nets import MLP, CNNMnist, CNNCifar, VGG11
@@ -21,8 +20,9 @@ import math
 import pickle
 from multiprocessing import Pool
 import torch.multiprocessing as mp  # 导入多进程模块，用于并行训练
-from datetime import datetime
 from onlineFL_step1_全参数固定的仿真模板代码_用于获取每一time的实际训练量_FINAL import get_real_flow_mb_in_t_time
+
+from datetime import datetime
 
 # 获取当前时间
 now = datetime.now()
@@ -96,7 +96,7 @@ def main():
 
     args = args_parser()
     # epoch_value = args.epochs
-    p_value = args.p
+    p_value = args.p  # H = 3   5  10
     ai = args.ai
     alpha = args.alpha
     total_size = args.total_mb
@@ -104,7 +104,7 @@ def main():
     T = args.T
 
     ### 1.先准备好每个时隙的工作节点和实际训练量 [slots.4]
-    time_slot_results = get_real_flow_mb_in_t_time(total_slots, T)
+    time_slot_results = get_real_flow_mb_in_t_time(total_slots=total_slots, onlineFL_T=T, p_value=p_value)
     print(f"step1 获取到{len(time_slot_results)}个时隙的工作节点以及实际训练量")
 
 
@@ -228,10 +228,11 @@ def main():
                                     Ai_actdata=Ai_actdata, total_size=total_size)
 
         else:
-            # Dirichlet分布实现Non-IID  alpha控制 non-IID 程度
-            dict_users = mnist_noniid_dirichlet(dataset_train, args.num_users, round_idx, offloading_data,
-                                                alpha=alpha,
-                                                Ai_actdata=Ai_actdata, total_size=total_size)
+            
+            dict_users = mnist_noniid_by_training_sizes(dataset_train, args.num_users, round_idx,
+                                            offloading_data, alpha=alpha,
+                                            Ai_actdata=Ai_actdata, total_size=total_size)
+
         
         
         

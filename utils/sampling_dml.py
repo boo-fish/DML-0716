@@ -316,6 +316,141 @@ def mnist_iid_by_training_sizes(dataset, num_users, round_idx, offloading_data, 
         return dict_users
 
 
+def mnist_noniid_by_training_sizes(dataset, num_users, round_idx, offloading_data, alpha=0.5, Ai_actdata=None, total_size=None):
+    """
+    根据 training_sizes 实际分配数据的 Non-IID 划分方法（基于 Dirichlet 分布）
+    
+    参数：
+    - dataset: 数据集对象
+    - num_users: 客户端数量
+    - round_idx: 当前轮数
+    - offloading_data: 数据卸载字典
+    - alpha: Dirichlet 分布参数（控制非IID程度，越小越不均匀）
+    - Ai_actdata: 每轮的[Ai, training_sizes]列表
+    - total_size: 总样本量参考值
+    
+    返回：
+    - dict_users: 每个客户端分配到的样本索引集合
+    """
+    try:
+        # 获取 Ai 和 training_sizes
+        if Ai_actdata is None or round_idx >= len(Ai_actdata):
+            logging.warning(f"Ai_actdata为空或round_idx({round_idx})超出范围，使用默认值")
+            Ai = 6
+            training_sizes = [0] * num_users
+        else:
+            Ai, training_sizes = Ai_actdata[round_idx]
+
+        # 处理 total_size
+        if total_size is None:
+            logging.warning("total_size未传递，使用默认值179")
+            total_size = 179
+
+        # 计算每 MB 对应的样本数
+        samples_per_mb = len(dataset) / total_size
+
+        # 根据 training_sizes 计算每个客户端应分配的样本数
+        num_items = {}
+        total_requested = 0
+        for i in range(num_users):
+            # 将 MB 转换为样本数
+            samples = int(training_sizes[i] * samples_per_mb)
+            num_items[i] = samples
+            total_requested += samples
+
+        # 如果请求的总样本数超过数据集大小，按比例缩放
+        if total_requested > len(dataset):
+            scale_factor = len(dataset) / total_requested
+            print(f"[WARNING] 请求样本数超过数据集，按比例缩放: {scale_factor:.4f}")
+            for i in range(num_users):
+                num_items[i] = max(1, int(num_items[i] * scale_factor))
+
+        # 获取标签信息（兼容MNIST/CIFAR10）
+        if hasattr(dataset, 'train_labels'):
+            labels = dataset.train_labels.numpy()
+        elif hasattr(dataset, 'targets'):
+            labels = np.array(dataset.targets)
+        else:
+            labels = np.array([label for _, label in dataset])
+
+        num_classes = len(np.unique(labels))
+        class_indices = [np.where(labels == y)[0] for y in range(num_classes)]
+
+        # 为每个类生成 Dirichlet 分布用于用户分配比例
+        client_indices = defaultdict(list)
+        for c in range(num_classes):
+            # 获取第c类的所有index
+            idx_c = class_indices[c]
+            np.random.shuffle(idx_c)
+
+            # 为这个类别在不同客户端上的分布生成一个 Dirichlet 向量
+            proportions = np.random.dirichlet([alpha] * num_users)
+
+            # 乘以样本总量并四舍五入得到分配样本数量
+            proportions = np.array([int(p * len(idx_c)) for p in proportions])
+
+            # 修正总和偏差
+            diff = len(idx_c) - np.sum(proportions)
+            for i in range(abs(diff)):
+                proportions[i % num_users] += 1 if diff > 0 else -1
+
+            start = 0
+            for i in range(num_users):
+                client_indices[i].extend(idx_c[start:start + proportions[i]])
+                start += proportions[i]
+
+        # 根据每个客户端的目标样本数进行分配
+        dict_users = {}
+        selected_indices = set()
+        shortage_record = {}
+        all_indices = set(range(len(dataset)))
+
+        # 第一步：按 client_indices 分配一部分（能分多少分多少）
+        for i in range(num_users):
+            user_idx = list(set(client_indices[i]))
+            target = num_items[i]
+
+            if target <= 0:
+                dict_users[i] = set()
+                continue
+
+            if len(user_idx) >= target:
+                selected = np.random.choice(user_idx, target, replace=False)
+            else:
+                selected = user_idx
+                shortage_record[i] = target - len(user_idx)
+
+            dict_users[i] = set(selected)
+            selected_indices.update(selected)
+
+        # 第二步：统一补充不够的客户端
+        remaining_indices = list(all_indices - selected_indices)
+
+        for i, shortage in shortage_record.items():
+            if len(remaining_indices) >= shortage:
+                supplement = np.random.choice(remaining_indices, shortage, replace=False)
+            else:
+                logging.warning(f"[WARNING] 可供补充的样本不足，仅剩 {len(remaining_indices)}，将启用重复采样")
+                supplement = np.random.choice(list(all_indices), shortage, replace=True)
+
+            dict_users[i].update(supplement)
+            selected_indices.update(supplement)
+            remaining_indices = list(all_indices - selected_indices)
+
+        # 打印分配结果
+        total_allocated = 0
+        for client_id, indices in dict_users.items():
+            total_allocated += len(indices)
+        print(f"[INFO] Non-IID 总分配样本数: {total_allocated}")
+
+        return dict_users
+
+    except Exception as e:
+        logging.error(f"Non-IID分配过程出错: {e}，使用默认Non-IID划分方法")
+        # 备用方案：使用默认的Non-IID划分
+        return mnist_noniid_dirichlet(dataset, num_users, round_idx, offloading_data, alpha, Ai_actdata, total_size)
+
+
 def mnist_iid(dataset, num_users, round_idx, offloading_data, Ai_actdata=None, total_size=None):
     """
     修改说明：
