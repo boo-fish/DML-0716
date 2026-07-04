@@ -9,26 +9,6 @@
 
 ## Reviewer #1 — 主要意见 (Main Comments)
 
-### Comment 1.1
-
-**英文原文**:
-The novelty of the proposed framework relative to the authors' prior work is not sufficiently established. The SGD-based Lagrangian update, the [O(1/ε), O(ε)] trade-off, the asymptotic-optimality argument, and the two-timescale stochastic optimization structure all appear in references [10], [28], [35], and [39], which are by the same author group. The manuscript does not provide an explicit comparison that isolates the contribution of the present paper. The authors should add a table or paragraph that itemizes which components are reused from prior work, which components are non-trivially extended, and which components are introduced for the first time in this manuscript. The relationship between the present setting (binary worker placement coupled with continuous data offloading under FL-specific constraints) and the settings in [10], [28], and [39] should be made precise.
-
-**中文翻译**:
-所提出框架相对于作者先前工作的新颖性未得到充分确立。基于SGD的拉格朗日更新、[O(1/ε), O(ε)]权衡、渐近最优性论证以及双时间尺度随机优化结构均出现在参考文献[10]、[28]、[35]和[39]中，这些文献均来自同一作者团队。手稿未提供明确的对比来区分本文的贡献。作者应添加一个表格或段落，逐项列出哪些组件是从先前工作中复用的，哪些组件是非平凡扩展的，哪些组件是本文首次引入的。应精确阐明当前设置（二元工作者放置与FL特定约束下的连续数据卸载相结合）与[10]、[28]和[39]中设置之间的关系。
-
----
-
-### Comment 1.2
-
-**英文原文**:
-The proof of Theorem 1 is omitted with the statement "the proof is similar to that in [39] and is thus omitted." Theorem 1 is the central theoretical guarantee of the paper. The settings of [39] (geo-distributed machine learning data partitioning) and the present paper (binary worker placement under FL synchronization constraints) are not identical, and the extension is not self-evident. At minimum, a proof sketch should appear in the main text or an appendix, identifying which parts carry over directly from [39] and which require modification due to the binary worker variables, the maximum-worker constraint (3b), and the multi-hop offloading structure.
-
-**中文翻译**:
-定理1的证明被省略了，仅陈述"证明与[39]中的类似，故省略"。定理1是本文的中心理论保证。[39]的设置（地理分布式机器学习数据划分）与本文的设置（FL同步约束下的二元工作者放置）并不相同，且该扩展并非不言自明。至少应在正文或附录中提供一个证明概要，指出哪些部分可以直接从[39]迁移过来，哪些部分需要因二元工作者变量、最大工作者数量约束(3b)以及多跳卸载结构而进行修改。
-
----
-
 ### Comment 1.3
 
 **英文原文**:
@@ -47,25 +27,13 @@ The baselines used for the 9.3× throughput claim are insufficient. The comparis
 **中文翻译**:
 用于支撑9.3倍吞吐量声称的基线方法不够充分。对比仅包括"Local Training"（无卸载的随机工作者选择）和"Random Orchestration"（通过算法1进行卸载的随机工作者选择）。两种基线均缺乏任何形式的工作者选择优化，这使得大幅倍数差距并不令人惊讶且难以解读。手稿在第2节中明确引用了FL客户端选择方案[22]、[23]、[24]，但未与之比较。应至少包含一种已发表的FL客户端选择方法（例如FedCS、Oort、Power-of-Choice，或[22]-[24]之一）和一种基于容量的贪心启发式方法。摘要中的"state of the art"表述不应使用，除非与当前最先进方法进行了比较。
 
----
-
-### Comment 1.5
-
-**英文原文**:
-The privacy argument presented in Section 1 contains an internal tension that should be resolved. The paper asserts that D2D offloading preserves privacy because data remains "accessible at trusted peers (i.e., the IoT devices from the same service provider) and unavailable to third parties (e.g., the BS of infrastructure providers)." This contradicts the standard FL premise that data remains local to its originating device. If D2D peers can be trusted with raw data, the motivation for using FL rather than direct centralized training over the trusted set of devices is unclear. The authors should add an explicit threat model that specifies which entities are trusted, which information is protected, and how D2D offloading affects the privacy guarantees normally associated with FL. If the architecture requires secure or encrypted offloading, this should be stated and accounted for in the cost model. Alternatively, the privacy claim should be removed and the contribution framed strictly in terms of throughput and energy efficiency.
-
-**中文翻译**:
-第1节中提出的隐私论证存在内在矛盾，应予解决。论文声称D2D卸载保护隐私，因为数据"可在受信任的对等方（即来自同一服务提供商的IoT设备）处访问，而对第三方（例如基础设施提供商的基站）不可用"。这与标准FL的前提——数据保留在其原始设备本地——相矛盾。如果D2D对等方可以被信任处理原始数据，那么使用FL而非在可信设备集合上进行直接集中式训练的动机就不明确了。作者应添加一个明确的威胁模型，指定哪些实体是可信的、哪些信息受到保护，以及D2D卸载如何影响通常与FL关联的隐私保证。如果架构需要安全或加密卸载，应予以说明并在成本模型中加以考虑。或者，应删除隐私声明，将贡献严格限定在吞吐量和能效方面。
-
----
-
 ### Comment 1.6
 
 **英文原文**:
-The bound in Theorem 2, namely εB with B = 2T(Σᵢθᵢᵐᵃˣδᵢᵐᵃˣ + Σ_(i,j)Cᵢⱼᵐᵃˣθᵢⱼᵐᵃˣδᵢᵐᵃˣ), grows linearly with T, |N|, and |E| and depends on the maxima of stochastic parameters. In massive IoT settings with large N and dense E this constant can be substantial. The manuscript states that the loss "asymptotically diminishes as ε → 0" but does not quantify εB for the experimental setting ε = 1/2000. A numerical estimate of the bound under the actual simulation parameters should be provided, and the relationship between the bound and the observed gap between T=10 and T=20 configurations should be discussed.
+The bound in Theorem 2, namely εB with B = 2T(Σᵢθᵢᵐᵃˣδᵢᵐᵃˣ + Σ\_(i,j)Cᵢⱼᵐᵃˣθᵢⱼᵐᵃˣδᵢᵐᵃˣ), grows linearly with T, |N|, and |E| and depends on the maxima of stochastic parameters. In massive IoT settings with large N and dense E this constant can be substantial. The manuscript states that the loss "asymptotically diminishes as ε → 0" but does not quantify εB for the experimental setting ε = 1/2000. A numerical estimate of the bound under the actual simulation parameters should be provided, and the relationship between the bound and the observed gap between T=10 and T=20 configurations should be discussed.
 
 **中文翻译**:
-定理2中的界，即εB，其中B = 2T(Σᵢθᵢᵐᵃˣδᵢᵐᵃˣ + Σ_(i,j)Cᵢⱼᵐᵃˣθᵢⱼᵐᵃˣδᵢᵐᵃˣ)，随T、|N|和|E|线性增长，且依赖于随机参数的最大值。在大规模IoT设置中，N较大且E密集，该常数可能相当可观。手稿声称该损失"随着ε → 0渐近消失"，但未对实验设置ε = 1/2000下的εB进行量化。应提供实际仿真参数下的界的数值估计，并讨论该界与T=10和T=20配置之间观察到的差距之间的关系。
+定理2中的界，即εB，其中B = 2T(Σᵢθᵢᵐᵃˣδᵢᵐᵃˣ + Σ\_(i,j)Cᵢⱼᵐᵃˣθᵢⱼᵐᵃˣδᵢᵐᵃˣ)，随T、|N|和|E|线性增长，且依赖于随机参数的最大值。在大规模IoT设置中，N较大且E密集，该常数可能相当可观。手稿声称该损失"随着ε → 0渐近消失"，但未对实验设置ε = 1/2000下的εB进行量化。应提供实际仿真参数下的界的数值估计，并讨论该界与T=10和T=20配置之间观察到的差距之间的关系。
 
 ---
 
@@ -151,56 +119,6 @@ The relationship between Algorithm 1 and BPSO in the large-timescale step should
 
 ## Reviewer #1 — 次要意见 (Minor Comments)
 
-### Comment 1.15
-
-**英文原文**:
-Section 1.1 states "the system model is presented in Section 3" but does not mention Section 2 (Related Work) in the organization paragraph. The organization should be updated for consistency.
-
-**中文翻译**:
-第1.1节陈述"系统模型在第3节中介绍"，但在组织结构段落中未提及第2节（相关工作）。应更新组织结构以保持一致。
-
----
-
-### Comment 1.16
-
-**英文原文**:
-The notation X(t) is used both for a random process and for its long-term average (defined in Section 3 as the limit of the time average). A different symbol, such as X̄ or 〈X〉, should be used for the average to avoid ambiguity.
-
-**中文翻译**:
-符号X(t)既用于表示随机过程，又用于表示其长期平均值（在第3节中定义为时间平均的极限）。应使用不同的符号（如X̄或〈X〉）表示平均值，以避免歧义。
-
----
-
-### Comment 1.17
-
-**英文原文**:
-Constraint (1b), dᵢⱼ(t) + dⱼᵢ(t) ≤ Cᵢⱼ(t), implicitly assumes a half-duplex link model. This assumption should be stated explicitly.
-
-**中文翻译**:
-约束(1b)，dᵢⱼ(t) + dⱼᵢ(t) ≤ Cᵢⱼ(t)，隐含假设了半双工链路模型。应明确陈述这一假设。
-
----
-
-### Comment 1.18
-
-**英文原文**:
-Algorithm 1, line 8: the augmenting capacity f should be defined as the bottleneck capacity along the path P. As written, the meaning of "augment along path P with its capacity f" is ambiguous.
-
-**中文翻译**:
-算法1第8行：增广容量f应定义为沿路径P的瓶颈容量。按当前表述，"沿路径P以其容量f进行增广"的含义是模糊的。
-
----
-
-### Comment 1.19
-
-**英文原文**:
-Lemma 1: the inequality "|·| ≤ εδᵢᵐᵃˣ" appears in the proof with a missing left-hand side. The intended expression appears to be |λᵢ(t+1) − λᵢ(t)| ≤ εδᵢᵐᵃˣ and should be written in full.
-
-**中文翻译**:
-引理1：证明中出现了不等式"|·| ≤ εδᵢᵐᵃˣ"，左侧缺失。预期的表达式应为|λᵢ(t+1) − λᵢ(t)| ≤ εδᵢᵐᵃˣ，应完整写出。
-
----
-
 ### Comment 1.20
 
 **英文原文**:
@@ -209,18 +127,6 @@ Figures 8 and 9 use 3D surface plots that are difficult to read. 2D heatmaps, or
 **中文翻译**:
 图8和图9使用了难以阅读的3D曲面图。2D热力图，或显示每个H下准确率随α变化的选定折线图，将更清晰地传达结果。
 
----
-
-### Comment 1.21
-
-**英文原文**:
-The numerical claim "9.3 times higher throughput" in the abstract and Section 1 should be linked to the specific figure and parameter setting from which it is derived.
-
-**中文翻译**:
-摘要和第1节中"9.3倍更高吞吐量"的数值声明应关联到其来源的具体图形和参数设置。
-
----
-
 ### Comment 1.22
 
 **英文原文**:
@@ -228,98 +134,3 @@ The version of VGG11 used in the experiments should be specified, in particular 
 
 **中文翻译**:
 实验中使用的VGG11版本应予说明，特别是是否包含批量归一化，因为这会影响在CIFAR-10上的训练行为。
-
----
-
-### Comment 1.23
-
-**英文原文**:
-Reference [23] is listed as "International Conference on Learning Representations, 2022" without clarifying whether it is a main-track or workshop paper. Reference [33] (Sutton and Barto) should specify the edition (1998 or 2018).
-
-**中文翻译**:
-参考文献[23]被列为"International Conference on Learning Representations, 2022"，但未说明是正会论文还是workshop论文。参考文献[33]（Sutton and Barto）应注明版本（1998或2018）。
-
----
-
-### Comment 1.24
-
-**英文原文**:
-The self-citation rate (references [10], [27], [28], [30], [35], [36], [39]) is high. The relationship to each of these works should be discussed explicitly rather than only cited, so that the present contribution can be assessed against the prior line of work.
-
-**中文翻译**:
-自引率（参考文献[10]、[27]、[28]、[30]、[35]、[36]、[39]）偏高。应明确讨论与每项工作的关系，而非仅引用，以便评估本文相对于先前工作的贡献。
-
----
-
-### Comment 1.25
-
-**英文原文**:
-Several phrases would benefit from a further language pass, including "conforming the local learning models at the devices," "computing/updating the global model," and "the casuality constraint" (Section 4.0.2, where "casuality" should read "causality").
-
-**中文翻译**:
-若干短语可从进一步的语言润色中受益，包括"conforming the local learning models at the devices"、"computing/updating the global model"以及"the casuality constraint"（第4.0.2节，其中"casuality"应为"causality"）。
-
----
-
-### Comment 1.26
-
-**英文原文**:
-Fig. 7 shows that the Lagrange multipliers under the random orchestration baseline do not stabilize. This may reflect an instability of that baseline rather than a property of the optimization, and should be discussed.
-
-**中文翻译**:
-图7显示随机编排基线下的拉格朗日乘子未稳定。这可能反映了该基线的不稳定性而非优化的特性，应予讨论。
-
----
-
-### Comment 1.27
-
-**英文原文**:
-The acronym BPSO is introduced in the abstract but its full form is given only later in Section 1. Acronyms should be expanded at first use.
-
-**中文翻译**:
-缩写BPSO在摘要中即已使用，但其全称仅在第1节后面才给出。缩写应在首次使用时展开。
-
----
-
-### Comment 1.28
-
-**英文原文**:
-Fig. 1(b) shows an "Energy arrival" element whose role is not fully described in the accompanying text. A brief caption-level or in-text clarification would help.
-
-**中文翻译**:
-图1(b)显示了一个"Energy arrival"元素，其作用在附文中未充分描述。在图注或文中进行简要说明将有所帮助。
-
----
-
-## Reviewer #2
-
-### Comment 2.1
-
-**英文原文**:
-This paper presents an FL architecture to increase the system throughput via inter-device communications. The authors propose a method that is validated via experimental results. The paper is well written and easy to follow. The main weakness of the paper is the use of very particular assumptions for experimental results and the assumption that the network throughput is a limiting factor for FL in IoT.
-
-**中文翻译**:
-本文提出了一种通过设备间通信提高系统吞吐量的FL架构。作者提出了一种方法并通过实验结果进行了验证。论文写作良好且易于理解。论文的主要弱点是实验结果使用了非常特定的假设，以及假设网络吞吐量是IoT中FL的限制因素。
-
----
-
-## 意见汇总
-
-| 编号 | 类别 | 核心问题 |
-|------|------|----------|
-| 1.1 | 新颖性 | 需明确与先前工作的区别 |
-| 1.2 | 理论 | 定理1证明缺失，需补充证明概要 |
-| 1.3 | 定位 | FL贡献有限，目标函数非FL感知 |
-| 1.4 | 实验 | 基线不足，需增加FL客户端选择方法对比 |
-| 1.5 | 隐私 | 隐私论证存在矛盾，需明确威胁模型 |
-| 1.6 | 理论 | 定理2的界需数值量化 |
-| 1.7 | 实验 | FL训练未收敛，需增加轮次 |
-| 1.8 | 实验 | 缺乏统计离散度（标准差/误差条） |
-| 1.9 | 实现 | 计算复杂度和运行时间未分析 |
-| 1.10 | 实现 | BPSO超参数未说明 |
-| 1.11 | 实验 | T值实验不充分 |
-| 1.12 | 假设 | i.i.d.假设受限，需鲁棒性实验 |
-| 1.13 | 实验 | Cost指标未精确定义 |
-| 1.14 | 实现 | 算法1与BPSO交互关系不明确 |
-| 1.15-1.28 | 次要 | 排版、符号、图注等小问题 |
-| 2.1 | 综合 | 实验假设过于特定，吞吐量作为FL瓶颈的假设需论证 |
