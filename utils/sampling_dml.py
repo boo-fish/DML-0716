@@ -1,0 +1,656 @@
+import numpy as np
+import pickle
+import logging
+from collections import defaultdict
+from others.view_noiid分布 import visualize_dirichlet_distribution
+
+def perform_offloading(dataset, dict_users, offloading_data, max_attempts=1000,total_size=None):
+    """
+    根据offloading_data字典执行数据卸载
+
+    参数:
+    - dataset: MNIST数据集
+    - dict_users: 原始客户端样本分配字典
+    - offloading_data: 数据卸载字典
+    - max_attempts: 最大尝试次数
+
+    返回:
+    - 卸载后的dict_users
+    """
+
+    total_samples_before = 0
+
+    # 复制原始分配，避免修改原始数据
+    new_dict_users = {i: set(indices) for i, indices in dict_users.items()}
+
+    # 存储待处理的卸载请求
+    pending_offloads = []
+    for src, dest_dict in offloading_data.items():
+        for dest, megabytes in dest_dict.items():
+            pending_offloads.append((src, dest, int(megabytes)))
+
+    print("[INFO] 待处理的卸载请求",pending_offloads)
+
+    attempt = 0
+    while pending_offloads and attempt < max_attempts:
+        attempt += 1
+        remaining_offloads = []
+
+        for src, dest, megabytes in pending_offloads:
+            # 检查源客户端和目标客户端是否存在
+            if src not in new_dict_users or dest not in new_dict_users:
+                continue
+
+            if total_size == 179:
+                samples_of_need_offload = megabytes * 335
+            elif total_size == 586:
+                samples_of_need_offload = megabytes * 85
+
+            # # 计算源客户端的样本大小
+            src_indices = list(new_dict_users[src])
+
+            # 如果源客户端数据量小于要卸载的数据量，跳过此次卸载
+            if len(src_indices) < samples_of_need_offload :
+                remaining_offloads.append((src, dest, megabytes))
+                continue
+
+            # 随机选择样本进行卸载
+            offload_indices = np.random.choice(src_indices, samples_of_need_offload, replace=False)
+
+            # 执行卸载
+            new_dict_users[src] -= set(offload_indices)
+            new_dict_users[dest].update(offload_indices)
+
+        # 更新待处理的卸载请求
+        pending_offloads = remaining_offloads
+
+    if pending_offloads:
+        logging.warning(f"经过{max_attempts}次尝试后，仍有{len(pending_offloads)}个卸载请求未完成")
+
+    # 输出卸载后的字典统计信息
+    print("\n[DEBUG] 卸载后字典统计信息:")
+    total_samples_after = 0
+    for client_id, indices in new_dict_users.items():
+        print(f"  客户端 {client_id}: {len(indices)} 个样本")
+        total_samples_after += len(indices)
+    print(f"  总样本数: {total_samples_after}")
+    print(f"  样本总数变化: {total_samples_after - total_samples_before} (应该为0)\n")
+
+    return new_dict_users
+# def perform_offloading(dataset, dict_users, offloading_data, max_attempts=1000):
+#     """
+#     根据offloading_data字典执行数据卸载
+#
+#     参数:
+#     - dataset: MNIST数据集
+#     - dict_users: 原始客户端样本分配字典
+#     - offloading_data: 数据卸载字典
+#     - max_attempts: 最大尝试次数
+#
+#     返回:
+#     - 卸载后的dict_users
+#     """
+#
+#     total_samples_before = sum(len(indices) for indices in dict_users.values())
+#
+#     # 复制原始分配，避免修改原始数据
+#     new_dict_users = {i: set(indices) for i, indices in dict_users.items()}
+#
+#     # 存储待处理的卸载请求
+#     pending_offloads = []
+#     for src, dest_dict in offloading_data.items():
+#         for dest, megabytes in dest_dict.items():
+#             pending_offloads.append((src, dest, int(megabytes)))
+#
+#     print("[INFO] 待处理的卸载请求", pending_offloads)
+#
+#     attempt = 0
+#     while pending_offloads and attempt < max_attempts:
+#         attempt += 1
+#         remaining_offloads = []
+#         executed_any = False
+#
+#         for src, dest, megabytes in pending_offloads:
+#             # 检查源客户端和目标客户端是否存在
+#             if src not in new_dict_users or dest not in new_dict_users:
+#                 continue
+#
+#             samples_of_need_offload = megabytes * 335
+#             # 计算源客户端的样本大小
+#             src_indices = list(new_dict_users[src])
+#
+#             # 如果源客户端数据量小于要卸载的数据量，暂存此次卸载
+#             if len(src_indices) < samples_of_need_offload:
+#                 remaining_offloads.append((src, dest, megabytes))
+#                 continue
+#
+#             # 随机选择样本进行卸载
+#             offload_indices = np.random.choice(src_indices, samples_of_need_offload, replace=False)
+#
+#             # 执行卸载
+#             new_dict_users[src] -= set(offload_indices)
+#             new_dict_users[dest].update(offload_indices)
+#             executed_any = True
+#
+#         # 如果本轮没有执行任何卸载，说明陷入死循环，退出
+#         if not executed_any:
+#             logging.warning(f"经过{attempt}次尝试后，无法再执行任何卸载，仍有{len(pending_offloads)}个请求未完成")
+#             break
+#
+#         # 更新待处理的卸载请求
+#         pending_offloads = remaining_offloads
+#
+#     if pending_offloads:
+#         logging.warning(f"经过{max_attempts}次尝试后，仍有{len(pending_offloads)}个卸载请求未完成")
+#
+#     # 输出卸载后的字典统计信息
+#     print("\n[DEBUG] 卸载后字典统计信息:")
+#     total_samples_after = 0
+#     for client_id, indices in new_dict_users.items():
+#         print(f"  客户端 {client_id}: {len(indices)} 个样本")
+#         total_samples_after += len(indices)
+#     print(f"  总样本数: {total_samples_after}")
+#     print(f"  样本总数变化: {total_samples_after - total_samples_before} (应该为0)\n")
+#
+#     return new_dict_users
+
+# def perform_offloading(dataset, dict_users, offloading_data, max_attempts=10):
+#     """
+#     根据offloading_data字典执行数据卸载
+#
+#     参数:
+#     - dataset: MNIST数据集
+#     - dict_users: 原始客户端样本分配字典
+#     - offloading_data: 数据卸载字典
+#     - max_attempts: 最大尝试次数
+#
+#     返回:
+#     - 卸载后的dict_users
+#     """
+#     # 复制原始分配，避免修改原始数据
+#     new_dict_users = {i: set(indices) for i, indices in dict_users.items()}
+#
+#     # 存储待处理的卸载请求
+#     pending_offloads = []
+#     for src, dest_dict in offloading_data.items():
+#         for dest, megabytes in dest_dict.items():
+#             pending_offloads.append((src, dest, float(megabytes)))
+#
+#     attempt = 0
+#     while pending_offloads and attempt < max_attempts:
+#         attempt += 1
+#         remaining_offloads = []
+#
+#         for src, dest, megabytes in pending_offloads:
+#             # 检查源客户端和目标客户端是否存在
+#             if src not in new_dict_users or dest not in new_dict_users:
+#                 continue
+#
+#             # 计算源客户端的样本大小
+#             src_indices = list(new_dict_users[src])
+#             src_size_bytes = calculate_sample_size(dataset, src_indices)
+#             src_size_mb = bytes_to_megabytes(src_size_bytes)
+#
+#             # 如果源客户端数据量小于要卸载的数据量，跳过此次卸载
+#             if src_size_mb < megabytes:
+#                 remaining_offloads.append((src, dest, megabytes))
+#                 continue
+#
+#             # 计算需要卸载的样本数量
+#             samples_to_offload = max(1, int(len(src_indices) * (megabytes / src_size_mb)))
+#
+#             # 随机选择样本进行卸载
+#             offload_indices = np.random.choice(src_indices, samples_to_offload, replace=False)
+#
+#             # 执行卸载
+#             new_dict_users[src] -= set(offload_indices)
+#             new_dict_users[dest].update(offload_indices)
+#
+#         # 更新待处理的卸载请求
+#         pending_offloads = remaining_offloads
+#
+#     if pending_offloads:
+#         logging.warning(f"经过{max_attempts}次尝试后，仍有{len(pending_offloads)}个卸载请求未完成")
+#
+#     return new_dict_users
+
+
+def mnist_iid_by_training_sizes(dataset, num_users, round_idx, offloading_data, Ai_actdata=None, total_size=None):
+    """
+    根据 training_sizes 实际分配数据的 IID 划分方法
+    
+    参数：
+    - dataset: 数据集对象
+    - num_users: 客户端数量
+    - round_idx: 当前轮数
+    - offloading_data: 数据卸载字典
+    - Ai_actdata: 每轮的[Ai, training_sizes]列表
+    - total_size: 总样本量参考值
+    
+    返回：
+    - dict_users: 每个客户端分配到的样本索引集合
+    """
+    try:
+        # 获取 Ai 和 training_sizes
+        if Ai_actdata is None or round_idx >= len(Ai_actdata):
+            logging.warning(f"Ai_actdata为空或round_idx({round_idx})超出范围，使用默认值")
+            Ai = 6
+            training_sizes = [0] * num_users
+        else:
+            Ai, training_sizes = Ai_actdata[round_idx]
+
+        # print(f"[DEBUG] Ai: {Ai}, training_sizes: {training_sizes}")
+
+        # 处理 total_size
+        if total_size is None:
+            logging.warning("total_size未传递，使用默认值179")
+            total_size = 179
+
+        # 计算每 MB 对应的样本数
+        samples_per_mb = len(dataset) / total_size
+        # print(f"[DEBUG] 每MB对应样本数: {samples_per_mb}")
+
+        # 根据 training_sizes 计算每个客户端应分配的样本数
+        num_items = {}
+        total_requested = 0
+        for i in range(num_users):
+            # 将 MB 转换为样本数
+            samples = int(training_sizes[i] * samples_per_mb)
+            num_items[i] = samples
+            total_requested += samples
+
+        # print(f"[DEBUG] 请求的总样本数: {total_requested}, 数据集总样本数: {len(dataset)}")
+
+        # 如果请求的总样本数超过数据集大小，按比例缩放
+        if total_requested > len(dataset):
+            scale_factor = len(dataset) / total_requested
+            print(f"[WARNING] 请求样本数超过数据集，按比例缩放: {scale_factor:.4f}")
+            for i in range(num_users):
+                num_items[i] = max(1, int(num_items[i] * scale_factor))
+
+        # IID 划分：随机无放回分配
+        dict_users = {}
+        all_idxs = [i for i in range(len(dataset))]
+        
+        for i in range(num_users):
+            if num_items[i] > 0:
+                # 确保不超过剩余可用样本数
+                max_available = len(all_idxs)
+                actual_num = min(num_items[i], max_available)
+                
+                if actual_num > 0:
+                    dict_users[i] = set(np.random.choice(all_idxs, actual_num, replace=False))
+                    all_idxs = list(set(all_idxs) - dict_users[i])
+                else:
+                    dict_users[i] = set()
+            else:
+                dict_users[i] = set()
+                # print(f"[DEBUG] 客户端 {i} 分配0个样本 (training_size={training_sizes[i]})")
+
+        # 打印分配结果
+        # print("\n[DEBUG] 按training_sizes分配结果:")
+        total_allocated = 0
+        for client_id, indices in dict_users.items():
+            # print(f"  客户端 {client_id}: {len(indices)} 个样本 (请求: {num_items[client_id]})")
+            total_allocated += len(indices)
+        print(f"[INFO] 总分配样本数: {total_allocated}")
+
+        ####  直接按照实际的训练数据划分的，不需要再执行数据卸载了
+        # if offloading_data:
+        #     dict_users = perform_offloading(dataset, dict_users, offloading_data, total_size=total_size)
+
+        return dict_users
+
+    except Exception as e:
+        logging.error(f"分配过程出错: {e}，使用默认IID划分方法")
+        # 备用方案：使用默认均匀分配
+        num_items = int(len(dataset) / num_users)
+        dict_users, all_idxs = {}, [i for i in range(len(dataset))]
+        for i in range(num_users):
+            dict_users[i] = set(np.random.choice(all_idxs, num_items, replace=False))
+            all_idxs = list(set(all_idxs) - dict_users[i])
+        
+        # if offloading_data:
+        #     dict_users = perform_offloading(dataset, dict_users, offloading_data, total_size=total_size)
+        
+        return dict_users
+
+
+def mnist_noniid_by_training_sizes(dataset, num_users, round_idx, offloading_data, alpha=0.5, Ai_actdata=None, total_size=None):
+    """
+    根据 training_sizes 实际分配数据的 Non-IID 划分方法（基于 Dirichlet 分布）
+    
+    参数：
+    - dataset: 数据集对象
+    - num_users: 客户端数量
+    - round_idx: 当前轮数
+    - offloading_data: 数据卸载字典
+    - alpha: Dirichlet 分布参数（控制非IID程度，越小越不均匀）
+    - Ai_actdata: 每轮的[Ai, training_sizes]列表
+    - total_size: 总样本量参考值
+    
+    返回：
+    - dict_users: 每个客户端分配到的样本索引集合
+    """
+    try:
+        # 获取 Ai 和 training_sizes
+        if Ai_actdata is None or round_idx >= len(Ai_actdata):
+            logging.warning(f"Ai_actdata为空或round_idx({round_idx})超出范围，使用默认值")
+            Ai = 6
+            training_sizes = [0] * num_users
+        else:
+            Ai, training_sizes = Ai_actdata[round_idx]
+
+        # 处理 total_size
+        if total_size is None:
+            logging.warning("total_size未传递，使用默认值179")
+            total_size = 179
+
+        # 计算每 MB 对应的样本数
+        samples_per_mb = len(dataset) / total_size
+
+        # 根据 training_sizes 计算每个客户端应分配的样本数
+        num_items = {}
+        total_requested = 0
+        for i in range(num_users):
+            # 将 MB 转换为样本数
+            samples = int(training_sizes[i] * samples_per_mb)
+            num_items[i] = samples
+            total_requested += samples
+
+        # 如果请求的总样本数超过数据集大小，按比例缩放
+        if total_requested > len(dataset):
+            scale_factor = len(dataset) / total_requested
+            print(f"[WARNING] 请求样本数超过数据集，按比例缩放: {scale_factor:.4f}")
+            for i in range(num_users):
+                num_items[i] = max(1, int(num_items[i] * scale_factor))
+
+        # 获取标签信息（兼容MNIST/CIFAR10）
+        if hasattr(dataset, 'train_labels'):
+            labels = dataset.train_labels.numpy()
+        elif hasattr(dataset, 'targets'):
+            labels = np.array(dataset.targets)
+        else:
+            labels = np.array([label for _, label in dataset])
+
+        num_classes = len(np.unique(labels))
+        class_indices = [np.where(labels == y)[0] for y in range(num_classes)]
+
+        # 为每个类生成 Dirichlet 分布用于用户分配比例
+        client_indices = defaultdict(list)
+        for c in range(num_classes):
+            # 获取第c类的所有index
+            idx_c = class_indices[c]
+            np.random.shuffle(idx_c)
+
+            # 为这个类别在不同客户端上的分布生成一个 Dirichlet 向量
+            proportions = np.random.dirichlet([alpha] * num_users)
+
+            # 乘以样本总量并四舍五入得到分配样本数量
+            proportions = np.array([int(p * len(idx_c)) for p in proportions])
+
+            # 修正总和偏差
+            diff = len(idx_c) - np.sum(proportions)
+            for i in range(abs(diff)):
+                proportions[i % num_users] += 1 if diff > 0 else -1
+
+            start = 0
+            for i in range(num_users):
+                client_indices[i].extend(idx_c[start:start + proportions[i]])
+                start += proportions[i]
+
+        # 根据每个客户端的目标样本数进行分配
+        dict_users = {}
+        selected_indices = set()
+        shortage_record = {}
+        all_indices = set(range(len(dataset)))
+
+        # 第一步：按 client_indices 分配一部分（能分多少分多少）
+        for i in range(num_users):
+            user_idx = list(set(client_indices[i]))
+            target = num_items[i]
+
+            if target <= 0:
+                dict_users[i] = set()
+                continue
+
+            if len(user_idx) >= target:
+                selected = np.random.choice(user_idx, target, replace=False)
+            else:
+                selected = user_idx
+                shortage_record[i] = target - len(user_idx)
+
+            dict_users[i] = set(selected)
+            selected_indices.update(selected)
+
+        # 第二步：统一补充不够的客户端
+        remaining_indices = list(all_indices - selected_indices)
+
+        for i, shortage in shortage_record.items():
+            if len(remaining_indices) >= shortage:
+                supplement = np.random.choice(remaining_indices, shortage, replace=False)
+            else:
+                logging.warning(f"[WARNING] 可供补充的样本不足，仅剩 {len(remaining_indices)}，将启用重复采样")
+                supplement = np.random.choice(list(all_indices), shortage, replace=True)
+
+            dict_users[i].update(supplement)
+            selected_indices.update(supplement)
+            remaining_indices = list(all_indices - selected_indices)
+
+        # 打印分配结果
+        total_allocated = 0
+        for client_id, indices in dict_users.items():
+            total_allocated += len(indices)
+        print(f"[INFO] Non-IID 总分配样本数: {total_allocated}")
+
+        return dict_users
+
+    except Exception as e:
+        logging.error(f"Non-IID分配过程出错: {e}，使用默认Non-IID划分方法")
+        # 备用方案：使用默认的Non-IID划分
+        return mnist_noniid_dirichlet(dataset, num_users, round_idx, offloading_data, alpha, Ai_actdata, total_size)
+
+
+def mnist_iid(dataset, num_users, round_idx, offloading_data, Ai_actdata=None, total_size=None):
+    """
+    修改说明：
+    1. 新增Ai_actdata参数（从main函数传递，不再从pkl加载）
+    2. 新增total_size参数（从main函数传递，不再从pkl加载）
+    3. 增加索引边界检查，避免IndexError
+    """
+    try:
+        # =========关键修改1：移除从文件加载Ai_actdata的逻辑==========
+        # with open('Ai_actdata.pkl', 'rb') as f:
+        #     Ai_actdata = pickle.load(f)
+
+        # =========关键修改2：增加索引边界检查==========
+        if Ai_actdata is None or round_idx >= len(Ai_actdata):
+            logging.warning(f"Ai_actdata为空或round_idx({round_idx})超出范围，使用默认值")
+            # 给默认值避免报错
+            Ai = 6  # 与GetFlow默认ai值一致
+            training_sizes = [0] * num_users
+        else:
+            # 获取当前循环的 Ai 和训练数据量
+            Ai, training_sizes = Ai_actdata[round_idx]
+
+
+
+
+
+        print(Ai, training_sizes)
+
+        # =========关键修改3：移除从文件加载total_size的逻辑，优先使用传入的参数==========
+        # with open('./total_size.pkl', 'rb') as f:
+        #     total_size = pickle.load(f)
+        if total_size is None:
+            logging.warning("total_size未传递，使用默认值179（原total_size.pkl的默认值）")
+            total_size = 179  # 原total_size.pkl的默认值，可根据实际情况调整
+
+
+        # 计算每个客户端应获得的样本数
+        num_items = {i: (Ai * int(len(dataset) / total_size)) for i in range(num_users)}
+
+        dict_users, all_idxs = {}, [i for i in range(len(dataset))]
+        for i in range(num_users):
+            dict_users[i] = set(np.random.choice(all_idxs, num_items[i], replace=False))
+            all_idxs = list(set(all_idxs) - dict_users[i])
+
+        # 执行数据卸载
+        if offloading_data:
+            dict_users = perform_offloading(dataset, dict_users, offloading_data,total_size=total_size)
+
+        return dict_users
+    except FileNotFoundError as e:
+        logging.error(f"文件未找到: {e}. 使用默认数据划分方法。")
+        # 如果文件缺失，使用默认的IID划分方法
+        num_items = int(len(dataset) / num_users)
+        dict_users, all_idxs = {}, [i for i in range(len(dataset))]
+        for i in range(num_users):
+            dict_users[i] = set(np.random.choice(all_idxs, num_items, replace=False))
+            all_idxs = list(set(all_idxs) - dict_users[i])
+
+        # 执行数据卸载
+        if offloading_data:
+            dict_users = perform_offloading(dataset, dict_users, offloading_data,total_size=total_size)
+
+        return dict_users
+
+
+# =========基于 Dirichlet 分布的 MNIST Non-IID划分方法==============
+def mnist_noniid_dirichlet(dataset, num_users, round_idx, offloading_data, alpha=0.5, Ai_actdata=None, total_size=None):
+    """
+    修改说明：
+    1. 新增Ai_actdata参数（从main函数传递，不再从pkl加载）
+    2. 新增total_size参数（从main函数传递，不再从pkl加载）
+    3. 增加索引边界检查，避免IndexError
+
+    基于 Dirichlet 分布的 MNIST 非IID划分方法
+    参数：
+    - dataset: MNIST 训练集对象，需有 dataset.train_labels
+    - num_users: 客户端数量
+    - round_idx: 当前轮数，用于获取 Ai_actdata
+    - alpha: Dirichlet 分布的参数（控制非IID程度，越小越不均匀）
+    返回：
+    - dict_users: dict[int, set[int]]，每个客户端分配到的样本索引集合
+    """
+
+    try:
+
+        # =========关键修改2：增加索引边界检查==========
+        if Ai_actdata is None or round_idx >= len(Ai_actdata):
+            logging.warning(f"Ai_actdata为空或round_idx({round_idx})超出范围，使用默认值")
+            Ai = 6  # 与GetFlow默认ai值一致
+            training_sizes = [0] * num_users
+        else:
+            Ai, training_sizes = Ai_actdata[round_idx]
+
+        
+        if total_size is None:
+            logging.warning("total_size未传递，使用默认值179（原total_size.pkl的默认值）")
+            total_size = 179  # 原total_size.pkl的默认值，可根据实际情况调整
+
+        samples_of_1m = len(dataset) / total_size
+        print("[INFO] 1M对应样本数:", samples_of_1m)
+
+        # 计算每个客户端应获得的样本数   dict{key:对应的样本总数}
+        num_samples = {i: (Ai * int(len(dataset) / total_size)) for i in range(num_users)}
+    except FileNotFoundError as e:
+        logging.error(f"文件未找到: {e}. 使用默认均匀划分方式。")
+
+    # 4. 核心修改：通用标签获取逻辑（兼容MNIST/CIFAR10）
+    if hasattr(dataset, 'train_labels'):
+        labels = dataset.train_labels.numpy()  # 兼容旧版MNIST
+    elif hasattr(dataset, 'targets'):
+        labels = np.array(dataset.targets)  # CIFAR10/新版MNIST
+    else:
+        labels = np.array([label for _, label in dataset])  # 兜底通用
+
+    # 10
+    num_classes = len(np.unique(labels))
+    class_indices = [np.where(labels == y)[0] for y in range(num_classes)]
+
+    print("[INFO] 不同标签拥有的index集合:",class_indices)
+
+    # 为每个类生成 Dirichlet 分布用于用户分配比例
+    client_indices = defaultdict(list)
+    for c in range(num_classes):
+        # 获取第c类的所有index
+        idx_c = class_indices[c]
+        # shuffle
+        np.random.shuffle(idx_c)
+
+
+        # 为这个类别在不同客户端上的分布生成一个 Dirichlet 向量
+        proportions = np.random.dirichlet([alpha] * num_users)
+
+        # 乘以样本总量并四舍五入得到分配样本数量
+        proportions = np.array([int(p * len(idx_c)) for p in proportions])
+
+        # print(f"[INFO] 初始分配 len(idx_c):{len(idx_c)} np.sum(proportions):{np.sum(proportions)} ")
+
+        # 修正总和偏差
+        diff = len(idx_c) - np.sum(proportions)
+        for i in range(abs(diff)):
+            proportions[i % num_users] += 1 if diff > 0 else -1
+
+        # print(f"[CHECK] 修复后 类别{c} 分配前: {len(idx_c)}, 分配后: {np.sum(proportions)}")
+
+        start = 0
+        for i in range(num_users):
+            client_indices[i].extend(idx_c[start:start + proportions[i]])
+            start += proportions[i]
+
+    dict_users = {}
+    selected_indices = set()
+    shortage_record = {}
+
+    all_indices = set(range(len(dataset)))
+
+    # 第一步：按 client_indices 分配一部分（能分多少分多少）
+    for i in range(num_users):
+        user_idx = list(set(client_indices[i]))  # 去重
+        target = num_samples[i]
+
+        if len(user_idx) >= target:
+            selected = np.random.choice(user_idx, target, replace=False)
+        else:
+            selected = user_idx  # 所有能用的都用上
+            shortage_record[i] = target - len(user_idx)  # 记录还差多少
+
+        dict_users[i] = set(selected)
+        selected_indices.update(selected)
+
+        # print(f"[INFO] 第{i}个worker: 初选样本 {len(selected)}，目标数量 {target}")
+
+    # 第二步：统一补充不够的客户端
+    remaining_indices = list(all_indices - selected_indices)
+
+    for i, shortage in shortage_record.items():
+        if len(remaining_indices) >= shortage:
+            supplement = np.random.choice(remaining_indices, shortage, replace=False)
+        else:
+            logging.warning(f"[WARNING] 可供补充的样本不足，仅剩 {len(remaining_indices)}，将启用重复采样")
+            supplement = np.random.choice(list(all_indices), shortage, replace=True)
+
+        dict_users[i].update(supplement)
+        selected_indices.update(supplement)
+        remaining_indices = list(all_indices - selected_indices)  # 实时更新可用补充集
+
+        # print(f"[FIXED] 补充第{i}个worker: 增加 {len(supplement)} 样本，总计 {len(dict_users[i])}")
+
+
+    print("\n[DEBUG] 卸载前字典统计信息:")
+    total_samples_before = 0
+    for client_id, indices in dict_users.items():
+        print(f"  客户端 {client_id}: {len(indices)} 个样本")
+        total_samples_before += len(indices)
+    print(f"  总样本数: {total_samples_before}\n")
+
+
+    # visualize_dirichlet_distribution(dataset,dict_users,10,10)
+
+    # 执行数据卸载
+    if offloading_data:
+        dict_users = perform_offloading(dataset, dict_users, offloading_data,total_size=total_size)
+
+    return dict_users

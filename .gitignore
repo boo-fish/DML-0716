@@ -1,0 +1,14 @@
+# 数据与二进制文件
+data/
+*.pkl
+*.pth
+*.pt
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE 配置
+.idea/
+.vscode/
