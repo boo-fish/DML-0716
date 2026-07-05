@@ -1,5 +1,26 @@
 # 项目进度记录
 
+## 2026年07月05日
+
+**核心目的**: 实现两个基线方法脚本，为后续实验对比做准备
+
+- ✅ 创建 `baseline_local_training.py`：Local Training 基线（随机工作者选择 + 无数据卸载）
+- ✅ 创建 `baseline_random_orchestration.py`：Random Orchestration 基线（随机工作者选择 + Algorithm 1 卸载）
+- ✅ 创建 `docs/baseline_methods.md`：基线方法说明文档（对比表、核心逻辑、使用方式）
+- ✅ 创建 `run_method.py`：Python 方法切换包装器（--method proposed / local_training / random_orchestration）
+- ✅ 两个基线脚本输出格式与原 Step 1 脚本完全兼容，可直接替换 import 使用
+
+**数据信息**:
+- Baseline 1 (Local Training): 随机选K个 + 每设备数据 = min(A_i, F_i) + 无卸载
+- Baseline 2 (Random Orchestration): 随机选K个(每T时隙) + LP流优化卸载 + 拉格朗日乘子
+- 参数与原脚本一致: N=50, K=5, T=10/20, ε=0.0005
+
+**下一步计划**:
+- ⏳ 启动 Step 1：1.7 确保FL训练收敛（增加轮次、审查超参数）
+- ⏳ 撰写回复信
+
+---
+
 ## 2026年07月04日
 
 **核心目的**: 整理FGCS期刊审稿意见，按工作量维度分类，为修订工作提供优先级指引
