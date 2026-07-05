@@ -1,3 +1,7 @@
+import time
+import copy
+import torch
+
 import random
 from venv import logger
 import matplotlib
@@ -88,10 +92,100 @@ def train_client(args, dataset_train, dict_users, client_dataset_sizes, idx, net
     return w, loss, client_elapsed_time, idx
 
 
+
+
+
+
+def train_client_new_work2_mr(args, dataset_train, dict_users, client_dataset_sizes, idx, net_glob, worker_capacity):
+    # 记录客户端训练开始时间
+    client_start_time = time.time()
+
+    # 检查客户端数据大小是否为0（保留原函数判断逻辑与返回格式）
+    if client_dataset_sizes[idx] == 0:
+        return None, None, 0, idx
+
+    # 获取当前客户端全量样本索引
+    idxs = list(dict_users[idx])
+    data_size = len(idxs)
+
+    # 沿用原函数的模型初始化方式：深拷贝全局模型
+    net = copy.deepcopy(net_glob)
+    net.to(args.device)
+
+    # 计算单样本内存占用，推导客户端容量对应的最大分片样本数
+    sample, label = dataset_train[0]
+    sample_size = sample.element_size() * sample.nelement() / (1024 * 1024)  # 单位：MB
+    label_size = 4 / (1024 * 1024)  # 标签按int32估算，单位：MB
+    num_samples_in_capacity = int(worker_capacity[idx] / (sample_size + label_size))
+    # 保底逻辑：至少保留1个样本，避免容量过小导致分片数为0的死循环
+    num_samples_in_capacity = max(1, num_samples_in_capacity)
+
+    start_idx = 0
+    total_loss = 0.0
+    total_samples = 0
+    w = None  # 存储最终训练后的模型权重
+
+    # 分片循环训练（核心逻辑来自第二个函数）
+    while start_idx < data_size:
+        print(f"start_idx: {start_idx}, data_size: {data_size}")
+        # 计算当前分片的索引范围
+        remaining_samples = data_size - start_idx
+        end_idx = start_idx + min(num_samples_in_capacity, remaining_samples)
+        local_idxs = idxs[start_idx:end_idx]
+        current_sample_num = len(local_idxs)
+
+        # 创建当前分片的本地训练实例
+        local = LocalUpdate(args=args, dataset=dataset_train, idxs=local_idxs,
+                            client_data_size=current_sample_num)
+
+        # 在当前分片上执行训练
+        w, batch_loss = local.train(net=net)
+
+        # 按样本数加权累加损失，最终等价于全量训练的平均loss
+        total_loss += batch_loss * current_sample_num
+        total_samples += current_sample_num
+
+        # 清理当前批次梯度
+        net.zero_grad()
+
+        # 权重重载与显存优化（与第二个函数逻辑一致）
+        if torch.cuda.is_available() and args.device.type == 'cuda':
+            net.cpu()
+            net.load_state_dict(w)
+            net.to(args.device)
+        else:
+            net.load_state_dict(w)
+
+        # 每轮分片后清理CUDA缓存
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+        # 更新下一分片起始位置
+        start_idx = end_idx
+
+    # 计算全量本地数据的平均损失
+    avg_loss = total_loss / total_samples if total_samples > 0 else 0.0
+
+    # 记录客户端训练结束时间
+    client_end_time = time.time()
+    # 计算客户端训练时间
+    client_elapsed_time = client_end_time - client_start_time
+
+    # 释放模型资源
+    del net
+    # 手动释放 CUDA 缓存（保留原函数逻辑）
+    torch.cuda.empty_cache()
+
+    return w, avg_loss, client_elapsed_time, idx
+
+
+
+
 def main():
 
 
     torch.cuda.empty_cache()
+
 
 
     args = args_parser()
@@ -104,7 +198,10 @@ def main():
     T = args.T
 
     ### 1.先准备好每个时隙的工作节点和实际训练量 [slots.4]
-    time_slot_results = get_real_flow_mb_in_t_time(total_slots=total_slots, onlineFL_T=T, p_value=p_value)
+    time_slot_results = get_real_flow_mb_in_t_time(total_slots=total_slots, onlineFL_T=T, p_value=p_value,
+    A_min=args.A_min,
+    cap_min=args.cap_min
+    )
     print(f"step1 获取到{len(time_slot_results)}个时隙的工作节点以及实际训练量")
 
 
@@ -254,7 +351,7 @@ def main():
         # print(f"Round {epoch + 1}, 工作节点：{idxs_users}")
 
         with Pool(processes=len(idxs_users)) as pool:
-            results = pool.starmap(train_client, [
+            results = pool.starmap(train_client_new_work2_mr, [
                 (args, dataset_train, dict_users, client_dataset_sizes, idx, net_glob, worker_capacity) for idx in
                 idxs_users])
 

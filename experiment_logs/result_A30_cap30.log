@@ -1,0 +1,652 @@
+
+Time Slot 5 Results:
+  Selected Devices: [4, 7, 14, 21, 42]
+  Total Offload Data: 0.0000
+  Sample Device Computation F: [np.float64(141.03670324552047), np.float64(63.772731042299824), np.float64(117.5155093524978), np.float64(239.2277597291782), np.float64(286.47527172245026)]
+  Sample Final Data Amounts: [np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(86.00607915576687)]
+
+Time Slot 10 Results:
+  Selected Devices: [4, 7, 14, 21, 42]
+  Total Offload Data: 0.0000
+  Sample Device Computation F: [np.float64(317.7227252863815), np.float64(53.77953627600096), np.float64(111.40876630804716), np.float64(518.0249945374809), np.float64(304.96632781537664)]
+  Sample Final Data Amounts: [np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(54.34468417222739)]
+
+Time Slot 15 Results:
+  Selected Devices: [16, 18, 20, 21, 30]
+  Total Offload Data: 0.0000
+  Sample Device Computation F: [np.float64(352.5186126375028), np.float64(76.87341064174946), np.float64(55.396723141595984), np.float64(202.81499196943602), np.float64(174.54433516094448)]
+  Sample Final Data Amounts: [np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0)]
+
+Time Slot 20 Results:
+  Selected Devices: [16, 18, 20, 21, 30]
+  Total Offload Data: 0.0000
+  Sample Device Computation F: [np.float64(138.2737802565381), np.float64(52.90757554203902), np.float64(119.48955607281451), np.float64(417.8853167919447), np.float64(297.6299234222626)]
+  Sample Final Data Amounts: [np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0)]
+
+Time Slot 25 Results:
+  Selected Devices: [4, 12, 18, 29, 35]
+  Total Offload Data: 0.0000
+  Sample Device Computation F: [np.float64(261.9127740743951), np.float64(62.490711111777415), np.float64(81.56988774631265), np.float64(228.53960630455342), np.float64(240.7683447745479)]
+  Sample Final Data Amounts: [np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(65.22593245184886)]
+
+Time Slot 30 Results:
+  Selected Devices: [4, 12, 18, 29, 35]
+  Total Offload Data: 0.0000
+  Sample Device Computation F: [np.float64(376.13222561489073), np.float64(65.24468077636735), np.float64(74.63986121741891), np.float64(345.3347283332709), np.float64(152.08116265698905)]
+  Sample Final Data Amounts: [np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(69.9510746099705)]
+
+Time Slot 35 Results:
+  Selected Devices: [4, 7, 12, 30, 32]
+  Total Offload Data: 0.0000
+  Sample Device Computation F: [np.float64(305.0015384464183), np.float64(68.31056807455725), np.float64(50.30650299948351), np.float64(229.04379289950415), np.float64(187.46078474381346)]
+  Sample Final Data Amounts: [np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(95.34858706110934)]
+
+Time Slot 40 Results:
+  Selected Devices: [4, 7, 12, 30, 32]
+  Total Offload Data: 0.0000
+  Sample Device Computation F: [np.float64(228.17534487091615), np.float64(41.54665856773178), np.float64(102.02253033090919), np.float64(371.41881689048057), np.float64(129.50009609367385)]
+  Sample Final Data Amounts: [np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(48.57004413397626)]
+
+Time Slot 45 Results:
+  Selected Devices: [12, 18, 26, 41, 42]
+  Total Offload Data: 64.4113
+  Sample Device Computation F: [np.float64(263.83515285719415), np.float64(40.89270487018352), np.float64(119.54663252970605), np.float64(522.1826555190614), np.float64(268.45132302032926)]
+  Sample Final Data Amounts: [np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0)]
+
+Time Slot 50 Results:
+  Selected Devices: [12, 18, 26, 41, 42]
+  Total Offload Data: 58.5906
+  Sample Device Computation F: [np.float64(318.17926571554904), np.float64(44.98852271507406), np.float64(77.90898395346146), np.float64(238.10375712450232), np.float64(303.32485939306804)]
+  Sample Final Data Amounts: [np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0)]
+
+Time Slot 55 Results:
+  Selected Devices: [7, 14, 18, 40, 46]
+  Total Offload Data: 0.0000
+  Sample Device Computation F: [np.float64(162.47426333369668), np.float64(73.09243820110254), np.float64(54.451658637575306), np.float64(383.89943715969673), np.float64(273.13041595463153)]
+  Sample Final Data Amounts: [np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0)]
+
+Time Slot 60 Results:
+  Selected Devices: [7, 14, 18, 40, 46]
+  Total Offload Data: 0.0000
+  Sample Device Computation F: [np.float64(385.97256254424605), np.float64(26.16912904843524), np.float64(100.63531240781609), np.float64(216.7067697157612), np.float64(187.4428429906599)]
+  Sample Final Data Amounts: [np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0)]
+
+Time Slot 65 Results:
+  Selected Devices: [0, 14, 20, 26, 43]
+  Total Offload Data: 0.0000
+  Sample Device Computation F: [np.float64(245.88775517760294), np.float64(51.767306852547776), np.float64(89.92353888957801), np.float64(536.1092822560627), np.float64(206.43157740133816)]
+  Sample Final Data Amounts: [np.float64(28.398159290434194), np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0)]
+
+Time Slot 70 Results:
+  Selected Devices: [0, 14, 20, 26, 43]
+  Total Offload Data: 0.0000
+  Sample Device Computation F: [np.float64(366.4168576296081), np.float64(54.496882144593094), np.float64(54.61959792016646), np.float64(316.2402481972706), np.float64(130.4680392131443)]
+  Sample Final Data Amounts: [np.float64(28.341351841339886), np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0)]
+
+Time Slot 75 Results:
+  Selected Devices: [4, 20, 21, 35, 42]
+  Total Offload Data: 48.9790
+  Sample Device Computation F: [np.float64(207.39424505319525), np.float64(72.34301178979568), np.float64(88.45624228679354), np.float64(451.97202853107507), np.float64(297.9754088112651)]
+  Sample Final Data Amounts: [np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(104.43985660616792)]
+
+Time Slot 80 Results:
+  Selected Devices: [4, 20, 21, 35, 42]
+  Total Offload Data: 30.8973
+  Sample Device Computation F: [np.float64(230.00891861367603), np.float64(67.91997211277126), np.float64(112.59940188441479), np.float64(231.3383869415768), np.float64(269.4913761686844)]
+  Sample Final Data Amounts: [np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(75.79625564255088)]
+
+Time Slot 85 Results:
+  Selected Devices: [12, 18, 26, 29, 40]
+  Total Offload Data: 0.0000
+  Sample Device Computation F: [np.float64(265.2444514137754), np.float64(26.00153389807127), np.float64(52.5852508616457), np.float64(451.2072684877827), np.float64(229.556798483518)]
+  Sample Final Data Amounts: [np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0)]
+
+Time Slot 90 Results:
+  Selected Devices: [12, 18, 26, 29, 40]
+  Total Offload Data: 0.0000
+  Sample Device Computation F: [np.float64(226.52330173117645), np.float64(61.594054305651284), np.float64(109.35587902043093), np.float64(263.853682411595), np.float64(277.8542326399578)]
+  Sample Final Data Amounts: [np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0)]
+
+Time Slot 95 Results:
+  Selected Devices: [4, 18, 33, 35, 46]
+  Total Offload Data: 0.0000
+  Sample Device Computation F: [np.float64(223.88970956860337), np.float64(70.19956473527013), np.float64(74.4847924880508), np.float64(456.4271686011118), np.float64(191.04308703257482)]
+  Sample Final Data Amounts: [np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(109.0905902700449)]
+
+Time Slot 100 Results:
+  Selected Devices: [4, 18, 33, 35, 46]
+  Total Offload Data: 0.0000
+  Sample Device Computation F: [np.float64(172.00157705326578), np.float64(71.25855416731567), np.float64(64.36577012780302), np.float64(317.78064180370615), np.float64(140.87722528058788)]
+  Sample Final Data Amounts: [np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(52.59741444845557)]
+
+=== 仿真结果 (N=50) ===
+平均吞吐量:
+  提出的方法 (T=10): 441.4196
+  本地执行: 255.6152WARNING:root:[WARNING] 可供补充的样本不足，仅剩 1385，将启用重复采样
+
+  静态编排: 194.4136
+  提出的方法 (T1=20): 387.2420
+step1 获取到100个时隙的工作节点以及实际训练量
+目标准确率：55.0，目标epoch：100
+non-iid
+[WARNING] 请求样本数超过数据集，按比例缩放: 0.4086
+[INFO] Non-IID 总分配样本数: 49972
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 1, Test Accuracy: 10.0, Loss: 2.3015740341186524, Global training time: 0.013802590548098712
+
+[INFO] Non-IID 总分配样本数: 34101
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 2, Test Accuracy: 10.0, Loss: 2.2985135959625245, Global training time: 0.04156059237569817
+
+[INFO] Non-IID 总分配样本数: 23938
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 3, Test Accuracy: 10.789999961853027, Loss: 2.2965135593414305, Global training time: 0.05984101509182653
+
+[INFO] Non-IID 总分配样本数: 29565
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 4, Test Accuracy: 10.0, Loss: 2.293871000289917, Global training time: 0.0385386778016354
+
+[INFO] Non-IID 总分配样本数: 30412
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 5, Test Accuracy: 10.0, Loss: 2.290159140777588, Global training time: 0.06499728097609168
+
+[INFO] Non-IID 总分配样本数: 28212
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 6, Test Accuracy: 13.510000228881836, Loss: 2.285701752471924, Global training time: 0.06636154475610485
+
+[INFO] Non-IID 总分配样本数: 32789
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 7, Test Accuracy: 11.640000343322754, Loss: 2.276826459121704, Global training time: 0.06242327856453079
+
+[INFO] Non-IID 总分配样本数: 31063
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 8, Test Accuracy: 17.1299991607666, Loss: 2.261743914794922, Global training time: 0.06066675109933111
+
+[INFO] Non-IID 总分配样本数: 28418
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 9, Test Accuracy: 21.809999465942383, Loss: 2.234970994949341, Global training time: 0.03379558053306967
+
+[INFO] Non-IID 总分配样本数: 23824
+WARNING:root:[WARNING] 可供补充的样本不足，仅剩 230，将启用重复采样
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 10, Test Accuracy: 20.309999465942383, Loss: 2.1913903888702393, Global training time: 0.04103592818864296
+
+[WARNING] 请求样本数超过数据集，按比例缩放: 0.3683
+[INFO] Non-IID 总分配样本数: 50004
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 11, Test Accuracy: 20.920000076293945, Loss: 2.1615057216644287, Global training time: 0.01103520771304247
+
+[INFO] Non-IID 总分配样本数: 34618
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 12, Test Accuracy: 22.8700008392334, Loss: 2.061046838569641, Global training time: 0.07130986516393595
+
+[INFO] Non-IID 总分配样本数: 26417
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 13, Test Accuracy: 25.65999984741211, Loss: 2.0170256591796876, Global training time: 0.0620578266710784
+
+[INFO] Non-IID 总分配样本数: 31907
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 14, Test Accuracy: 26.100000381469727, Loss: 1.9799038801193238, Global training time: 0.08572320440769482
+
+[INFO] Non-IID 总分配样本数: 28040
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 15, Test Accuracy: 25.690000534057617, Loss: 1.9605766815185548, Global training time: 0.0536289277975001
+
+[INFO] Non-IID 总分配样本数: 32652
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 16, Test Accuracy: 27.979999542236328, Loss: 1.9093626678466797, Global training time: 0.09207723449541319
+
+[INFO] Non-IID 总分配样本数: 28178
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 17, Test Accuracy: 29.219999313354492, Loss: 1.8702030103683471, Global training time: 0.06887028986104364
+
+[INFO] Non-IID 总分配样本数: 29424
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 18, Test Accuracy: 29.969999313354492, Loss: 1.835695811843872, Global training time: 0.033712152463913195
+
+[INFO] Non-IID 总分配样本数: 37097
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 19, Test Accuracy: 31.540000915527344, Loss: 1.7920881370544433, Global training time: 0.10987966472119094
+
+[INFO] Non-IID 总分配样本数: 24566
+WARNING:root:[WARNING] 可供补充的样本不足，仅剩 764，将启用重复采样
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 20, Test Accuracy: 33.43000030517578, Loss: 1.7798594909667969, Global training time: 0.049596520651366244
+
+[WARNING] 请求样本数超过数据集，按比例缩放: 0.4095
+[INFO] Non-IID 总分配样本数: 49995
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 21, Test Accuracy: 29.950000762939453, Loss: 1.8065928758621215, Global training time: 0.015361708393368511
+
+[INFO] Non-IID 总分配样本数: 23315
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 22, Test Accuracy: 35.91999816894531, Loss: 1.72622683467865, Global training time: 0.031813153584721546
+
+[INFO] Non-IID 总分配样本数: 25327
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 23, Test Accuracy: 36.459999084472656, Loss: 1.6978893201828003, Global training time: 0.036104906299545846
+
+[INFO] Non-IID 总分配样本数: 27385
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 24, Test Accuracy: 37.529998779296875, Loss: 1.6693241275787354, Global training time: 0.043715192999611845
+
+[INFO] Non-IID 总分配样本数: 24892
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 25, Test Accuracy: 37.84000015258789, Loss: 1.6454783639907837, Global training time: 0.04358210789818176
+
+[INFO] Non-IID 总分配样本数: 28949
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 26, Test Accuracy: 39.81999969482422, Loss: 1.6106781423568726, Global training time: 0.035522550028296775
+
+[INFO] Non-IID 总分配样本数: 32925
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 27, Test Accuracy: 40.130001068115234, Loss: 1.5941058183670045, Global training time: 0.06761607646834931
+
+[INFO] Non-IID 总分配样本数: 28559
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 28, Test Accuracy: 41.09000015258789, Loss: 1.5680047975540161, Global training time: 0.057913634789554476
+
+[INFO] Non-IID 总分配样本数: 29651
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 29, Test Accuracy: 42.5099983215332, Loss: 1.5469115871429444, Global training time: 0.07181355856247058
+
+[INFO] Non-IID 总分配样本数: 30277
+WARNING:root:[WARNING] 可供补充的样本不足，仅剩 260，将启用重复采样
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 30, Test Accuracy: 43.2400016784668, Loss: 1.524975498199463, Global training time: 0.055163457227876835
+
+[WARNING] 请求样本数超过数据集，按比例缩放: 0.3849
+[INFO] Non-IID 总分配样本数: 49998
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 31, Test Accuracy: 43.0, Loss: 1.5526735219955445, Global training time: 0.010431055276544544
+
+[INFO] Non-IID 总分配样本数: 26081
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 32, Test Accuracy: 42.900001525878906, Loss: 1.5489534351348877, Global training time: 0.03617046976072457
+
+[INFO] Non-IID 总分配样本数: 23421
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 33, Test Accuracy: 43.310001373291016, Loss: 1.5148546323776244, Global training time: 0.03918190402225911
+
+[INFO] Non-IID 总分配样本数: 30797
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 34, Test Accuracy: 45.29999923706055, Loss: 1.4717273683547973, Global training time: 0.05765007653907016
+
+[INFO] Non-IID 总分配样本数: 30428
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 35, Test Accuracy: 45.650001525878906, Loss: 1.4697540678024292, Global training time: 0.07370186674451838
+
+[INFO] Non-IID 总分配样本数: 24515
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 36, Test Accuracy: 46.90999984741211, Loss: 1.4349891719818115, Global training time: 0.04404977100097523
+
+[INFO] Non-IID 总分配样本数: 20871
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 37, Test Accuracy: 46.099998474121094, Loss: 1.446542907333374, Global training time: 0.03226867261981474
+
+[INFO] Non-IID 总分配样本数: 31749
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 38, Test Accuracy: 47.630001068115234, Loss: 1.4196358078002929, Global training time: 0.04149942661239291
+
+[INFO] Non-IID 总分配样本数: 26251
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 39, Test Accuracy: 48.34000015258789, Loss: 1.400249747657776, Global training time: 0.05796027893462454
+
+[INFO] Non-IID 总分配样本数: 25462
+WARNING:root:[WARNING] 可供补充的样本不足，仅剩 1029，将启用重复采样
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 40, Test Accuracy: 48.41999816894531, Loss: 1.402784065246582, Global training time: 0.03672354172397963
+
+[WARNING] 请求样本数超过数据集，按比例缩放: 0.3872
+[INFO] Non-IID 总分配样本数: 49986
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 41, Test Accuracy: 47.40999984741211, Loss: 1.4450508211135864, Global training time: 0.017893153088390408
+
+[INFO] Non-IID 总分配样本数: 28666
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 42, Test Accuracy: 49.220001220703125, Loss: 1.3717305206298829, Global training time: 0.039332767058202905
+
+[INFO] Non-IID 总分配样本数: 17557
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 43, Test Accuracy: 50.349998474121094, Loss: 1.3534703870773315, Global training time: 0.014257751160692314
+
+[INFO] Non-IID 总分配样本数: 32535
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 44, Test Accuracy: 49.97999954223633, Loss: 1.3692542421340943, Global training time: 0.03638990850246928
+
+[INFO] Non-IID 总分配样本数: 25040
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 45, Test Accuracy: 50.45000076293945, Loss: 1.3581791875839233, Global training time: 0.038026939853476834
+
+[INFO] Non-IID 总分配样本数: 29231
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 46, Test Accuracy: 51.790000915527344, Loss: 1.3249466978073121, Global training time: 0.07771892460074813
+
+[INFO] Non-IID 总分配样本数: 36491
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 47, Test Accuracy: 49.97999954223633, Loss: 1.37379012966156, Global training time: 0.057425417687787854
+
+[INFO] Non-IID 总分配样本数: 23421
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 48, Test Accuracy: 51.72999954223633, Loss: 1.3214179985046386, Global training time: 0.020713954833735313
+
+[INFO] Non-IID 总分配样本数: 30145
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 49, Test Accuracy: 52.849998474121094, Loss: 1.3048720960617066, Global training time: 0.077109144171332
+
+[INFO] Non-IID 总分配样本数: 28289
+WARNING:root:[WARNING] 可供补充的样本不足，仅剩 835，将启用重复采样
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 50, Test Accuracy: 53.25, Loss: 1.2981731096267701, Global training time: 0.030363700559920614
+
+[WARNING] 请求样本数超过数据集，按比例缩放: 0.4231
+[INFO] Non-IID 总分配样本数: 49990
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 51, Test Accuracy: 53.310001373291016, Loss: 1.2885288091659546, Global training time: 0.019056057669698142
+
+[INFO] Non-IID 总分配样本数: 30758
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 52, Test Accuracy: 54.349998474121094, Loss: 1.2633607734680177, Global training time: 0.04254146617278114
+
+[INFO] Non-IID 总分配样本数: 36340
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 53, Test Accuracy: 54.369998931884766, Loss: 1.2572504722595215, Global training time: 0.07975461872405312
+
+[INFO] Non-IID 总分配样本数: 28360
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 54, Test Accuracy: 55.220001220703125, Loss: 1.2369278774261474, Global training time: 0.03952218203165001
+
+[INFO] Non-IID 总分配样本数: 25169
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 55, Test Accuracy: 55.09000015258789, Loss: 1.243267911529541, Global training time: 0.054649164836022626
+
+[INFO] Non-IID 总分配样本数: 32602
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 56, Test Accuracy: 55.86000061035156, Loss: 1.2254699058532714, Global training time: 0.07108576844420422
+
+[INFO] Non-IID 总分配样本数: 33183
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 57, Test Accuracy: 55.5, Loss: 1.242605731010437, Global training time: 0.06347531581667164
+
+[INFO] Non-IID 总分配样本数: 34240
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 58, Test Accuracy: 54.619998931884766, Loss: 1.253903353691101, Global training time: 0.04980957509411264
+
+[INFO] Non-IID 总分配样本数: 37908
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 59, Test Accuracy: 55.27000045776367, Loss: 1.2405213674545288, Global training time: 0.07783400368055747
+
+[INFO] Non-IID 总分配样本数: 25003
+WARNING:root:[WARNING] 可供补充的样本不足，仅剩 670，将启用重复采样
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 60, Test Accuracy: 56.97999954223633, Loss: 1.1937117549896241, Global training time: 0.027930878578432832
+
+[WARNING] 请求样本数超过数据集，按比例缩放: 0.4288
+[INFO] Non-IID 总分配样本数: 49986
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 61, Test Accuracy: 56.790000915527344, Loss: 1.1872129487991332, Global training time: 0.013307191485269593
+
+[INFO] Non-IID 总分配样本数: 16204
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 62, Test Accuracy: 56.95000076293945, Loss: 1.2012941791534424, Global training time: 0.02227483497629781
+
+[INFO] Non-IID 总分配样本数: 20444
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 63, Test Accuracy: 57.61000061035156, Loss: 1.1746409023284912, Global training time: 0.026749193797761465
+
+[INFO] Non-IID 总分配样本数: 27062
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 64, Test Accuracy: 57.880001068115234, Loss: 1.1705483980178832, Global training time: 0.04445250666549602
+
+[INFO] Non-IID 总分配样本数: 21292
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 65, Test Accuracy: 58.439998626708984, Loss: 1.1557804389953614, Global training time: 0.03264791509255884
+
+[INFO] Non-IID 总分配样本数: 15777
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 66, Test Accuracy: 58.02000045776367, Loss: 1.1596079210281371, Global training time: 0.017350350444994642
+
+[INFO] Non-IID 总分配样本数: 25503
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 67, Test Accuracy: 58.25, Loss: 1.1563124000549316, Global training time: 0.035527243589584825
+
+[INFO] Non-IID 总分配样本数: 26395
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 68, Test Accuracy: 58.77000045776367, Loss: 1.143243544769287, Global training time: 0.028136666681877705
+
+[INFO] Non-IID 总分配样本数: 24220
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 69, Test Accuracy: 58.9900016784668, Loss: 1.1478025036811828, Global training time: 0.04060655192451913
+
+[INFO] Non-IID 总分配样本数: 24989
+WARNING:root:[WARNING] 可供补充的样本不足，仅剩 2764，将启用重复采样
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 70, Test Accuracy: 59.02000045776367, Loss: 1.1455315475463868, Global training time: 0.056949877781601294
+
+[WARNING] 请求样本数超过数据集，按比例缩放: 0.4263
+[INFO] Non-IID 总分配样本数: 49911
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 71, Test Accuracy: 59.5, Loss: 1.1227125952720642, Global training time: 0.015234577339424826
+
+[INFO] Non-IID 总分配样本数: 23854
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 72, Test Accuracy: 59.939998626708984, Loss: 1.1107106929779054, Global training time: 0.03601826203923294
+
+[INFO] Non-IID 总分配样本数: 25792
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 73, Test Accuracy: 60.2400016784668, Loss: 1.110610384941101, Global training time: 0.02929490665028049
+
+[INFO] Non-IID 总分配样本数: 34414
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 74, Test Accuracy: 60.52000045776367, Loss: 1.1038977235794067, Global training time: 0.04092820240101881
+
+[INFO] Non-IID 总分配样本数: 32211
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 75, Test Accuracy: 61.150001525878906, Loss: 1.081104565143585, Global training time: 0.05824225984705892
+
+[INFO] Non-IID 总分配样本数: 28045
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 76, Test Accuracy: 61.560001373291016, Loss: 1.0721963777542114, Global training time: 0.05963053818945294
+
+[INFO] Non-IID 总分配样本数: 23489
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 77, Test Accuracy: 61.29999923706055, Loss: 1.0891256970405578, Global training time: 0.04670098772102754
+
+[INFO] Non-IID 总分配样本数: 24095
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 78, Test Accuracy: 61.529998779296875, Loss: 1.0629211462020873, Global training time: 0.06816968377889829
+
+[INFO] Non-IID 总分配样本数: 28583
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 79, Test Accuracy: 60.93000030517578, Loss: 1.0928239857673645, Global training time: 0.05278471870157953
+
+[INFO] Non-IID 总分配样本数: 32327
+WARNING:root:[WARNING] 可供补充的样本不足，仅剩 957，将启用重复采样
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 80, Test Accuracy: 60.15999984741211, Loss: 1.1222259817123412, Global training time: 0.07351632513120018
+
+[WARNING] 请求样本数超过数据集，按比例缩放: 0.3829
+[INFO] Non-IID 总分配样本数: 49977
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 81, Test Accuracy: 58.439998626708984, Loss: 1.1425236665725709, Global training time: 0.011261930510386
+
+[INFO] Non-IID 总分配样本数: 28560
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 82, Test Accuracy: 63.04999923706055, Loss: 1.0428662388801575, Global training time: 0.035133682591928735
+
+[INFO] Non-IID 总分配样本数: 26164
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 83, Test Accuracy: 60.40999984741211, Loss: 1.10171761302948, Global training time: 0.03711155622716811
+
+[INFO] Non-IID 总分配样本数: 41019
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 84, Test Accuracy: 62.790000915527344, Loss: 1.0353956690788269, Global training time: 0.06466426602542047
+
+[INFO] Non-IID 总分配样本数: 28487
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 85, Test Accuracy: 63.0, Loss: 1.0403816456794739, Global training time: 0.026119108930289816
+
+[INFO] Non-IID 总分配样本数: 30568
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 86, Test Accuracy: 63.36000061035156, Loss: 1.0404081174850464, Global training time: 0.04545612968182841
+
+[INFO] Non-IID 总分配样本数: 35626
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 87, Test Accuracy: 63.81999969482422, Loss: 1.0154804566383362, Global training time: 0.05926968898321659
+
+[INFO] Non-IID 总分配样本数: 32930
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 88, Test Accuracy: 63.720001220703125, Loss: 1.0098524881362916, Global training time: 0.05568335121102598
+
+[INFO] Non-IID 总分配样本数: 30817
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 89, Test Accuracy: 64.13999938964844, Loss: 0.9948520931243896, Global training time: 0.04478459465456329
+
+[INFO] Non-IID 总分配样本数: 30973
+WARNING:root:[WARNING] 可供补充的样本不足，仅剩 129，将启用重复采样
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 90, Test Accuracy: 64.30000305175781, Loss: 1.0002436880111694, Global training time: 0.03339323326643035
+
+[WARNING] 请求样本数超过数据集，按比例缩放: 0.4356
+[INFO] Non-IID 总分配样本数: 50007
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 91, Test Accuracy: 63.0099983215332, Loss: 1.0234067415237427, Global training time: 0.013476582761269135
+
+[INFO] Non-IID 总分配样本数: 24129
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 92, Test Accuracy: 63.9900016784668, Loss: 1.0036700244903565, Global training time: 0.049559485250338375
+
+[INFO] Non-IID 总分配样本数: 34729
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 93, Test Accuracy: 65.56999969482422, Loss: 0.9753635268211365, Global training time: 0.1015594026207918
+
+[INFO] Non-IID 总分配样本数: 24699
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 94, Test Accuracy: 65.6500015258789, Loss: 0.9741750568389893, Global training time: 0.04401651402561577
+
+[INFO] Non-IID 总分配样本数: 24944
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 95, Test Accuracy: 64.22000122070312, Loss: 1.0007590376853943, Global training time: 0.060405002608612514
+
+[INFO] Non-IID 总分配样本数: 26264
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 96, Test Accuracy: 65.69999694824219, Loss: 0.957437474155426, Global training time: 0.05268232565972647
+
+[INFO] Non-IID 总分配样本数: 21223
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 97, Test Accuracy: 65.83000183105469, Loss: 0.9573315921783447, Global training time: 0.035903505410820546
+
+[INFO] Non-IID 总分配样本数: 24281
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 98, Test Accuracy: 66.0, Loss: 0.9535223719596863, Global training time: 0.033853436729455254
+
+[INFO] Non-IID 总分配样本数: 25698
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 99, Test Accuracy: 65.69999694824219, Loss: 0.9518088779449463, Global training time: 0.06560775074701576
+
+[INFO] Non-IID 总分配样本数: 22552
+  w_locals: 2456.80 MB
+  gradient: 2456.80 MB
+Round 100, Test Accuracy: 66.1500015258789, Loss: 0.9447846489906311, Global training time: 0.039630010709759515
+
+成功保存数据pkl文件
+OnlineFL已训练完成，最终结果： {'ais': 2, 'test_accuracies': [tensor(66.1500)], 'global_round_accuracies': [[tensor(10.), tensor(10.), tensor(10.7900), tensor(10.), tensor(10.), tensor(13.5100), tensor(11.6400), tensor(17.1300), tensor(21.8100), tensor(20.3100), tensor(20.9200), tensor(22.8700), tensor(25.6600), tensor(26.1000), tensor(25.6900), tensor(27.9800), tensor(29.2200), tensor(29.9700), tensor(31.5400), tensor(33.4300), tensor(29.9500), tensor(35.9200), tensor(36.4600), tensor(37.5300), tensor(37.8400), tensor(39.8200), tensor(40.1300), tensor(41.0900), tensor(42.5100), tensor(43.2400), tensor(43.), tensor(42.9000), tensor(43.3100), tensor(45.3000), tensor(45.6500), tensor(46.9100), tensor(46.1000), tensor(47.6300), tensor(48.3400), tensor(48.4200), tensor(47.4100), tensor(49.2200), tensor(50.3500), tensor(49.9800), tensor(50.4500), tensor(51.7900), tensor(49.9800), tensor(51.7300), tensor(52.8500), tensor(53.2500), tensor(53.3100), tensor(54.3500), tensor(54.3700), tensor(55.2200), tensor(55.0900), tensor(55.8600), tensor(55.5000), tensor(54.6200), tensor(55.2700), tensor(56.9800), tensor(56.7900), tensor(56.9500), tensor(57.6100), tensor(57.8800), tensor(58.4400), tensor(58.0200), tensor(58.2500), tensor(58.7700), tensor(58.9900), tensor(59.0200), tensor(59.5000), tensor(59.9400), tensor(60.2400), tensor(60.5200), tensor(61.1500), tensor(61.5600), tensor(61.3000), tensor(61.5300), tensor(60.9300), tensor(60.1600), tensor(58.4400), tensor(63.0500), tensor(60.4100), tensor(62.7900), tensor(63.), tensor(63.3600), tensor(63.8200), tensor(63.7200), tensor(64.1400), tensor(64.3000), tensor(63.0100), tensor(63.9900), tensor(65.5700), tensor(65.6500), tensor(64.2200), tensor(65.7000), tensor(65.8300), tensor(66.), tensor(65.7000), tensor(66.1500)]], 'global_round_times': [[np.float64(0.013802590548098712), np.float64(0.04156059237569817), np.float64(0.05984101509182653), np.float64(0.0385386778016354), np.float64(0.06499728097609168), np.float64(0.06636154475610485), np.float64(0.06242327856453079), np.float64(0.06066675109933111), np.float64(0.03379558053306967), np.float64(0.04103592818864296), np.float64(0.01103520771304247), np.float64(0.07130986516393595), np.float64(0.0620578266710784), np.float64(0.08572320440769482), np.float64(0.0536289277975001), np.float64(0.09207723449541319), np.float64(0.06887028986104364), np.float64(0.033712152463913195), np.float64(0.10987966472119094), np.float64(0.049596520651366244), np.float64(0.015361708393368511), np.float64(0.031813153584721546), np.float64(0.036104906299545846), np.float64(0.043715192999611845), np.float64(0.04358210789818176), np.float64(0.035522550028296775), np.float64(0.06761607646834931), np.float64(0.057913634789554476), np.float64(0.07181355856247058), np.float64(0.055163457227876835), np.float64(0.010431055276544544), np.float64(0.03617046976072457), np.float64(0.03918190402225911), np.float64(0.05765007653907016), np.float64(0.07370186674451838), np.float64(0.04404977100097523), np.float64(0.03226867261981474), np.float64(0.04149942661239291), np.float64(0.05796027893462454), np.float64(0.03672354172397963), np.float64(0.017893153088390408), np.float64(0.039332767058202905), np.float64(0.014257751160692314), np.float64(0.03638990850246928), np.float64(0.038026939853476834), np.float64(0.07771892460074813), np.float64(0.057425417687787854), np.float64(0.020713954833735313), np.float64(0.077109144171332), np.float64(0.030363700559920614), np.float64(0.019056057669698142), np.float64(0.04254146617278114), np.float64(0.07975461872405312), np.float64(0.03952218203165001), np.float64(0.054649164836022626), np.float64(0.07108576844420422), np.float64(0.06347531581667164), np.float64(0.04980957509411264), np.float64(0.07783400368055747), np.float64(0.027930878578432832), np.float64(0.013307191485269593), np.float64(0.02227483497629781), np.float64(0.026749193797761465), np.float64(0.04445250666549602), np.float64(0.03264791509255884), np.float64(0.017350350444994642), np.float64(0.035527243589584825), np.float64(0.028136666681877705), np.float64(0.04060655192451913), np.float64(0.056949877781601294), np.float64(0.015234577339424826), np.float64(0.03601826203923294), np.float64(0.02929490665028049), np.float64(0.04092820240101881), np.float64(0.05824225984705892), np.float64(0.05963053818945294), np.float64(0.04670098772102754), np.float64(0.06816968377889829), np.float64(0.05278471870157953), np.float64(0.07351632513120018), np.float64(0.011261930510386), np.float64(0.035133682591928735), np.float64(0.03711155622716811), np.float64(0.06466426602542047), np.float64(0.026119108930289816), np.float64(0.04545612968182841), np.float64(0.05926968898321659), np.float64(0.05568335121102598), np.float64(0.04478459465456329), np.float64(0.03339323326643035), np.float64(0.013476582761269135), np.float64(0.049559485250338375), np.float64(0.1015594026207918), np.float64(0.04401651402561577), np.float64(0.060405002608612514), np.float64(0.05268232565972647), np.float64(0.035903505410820546), np.float64(0.033853436729455254), np.float64(0.06560775074701576), np.float64(0.039630010709759515)]]}

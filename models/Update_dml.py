@@ -43,11 +43,12 @@ class LocalUpdate(object):
         label_size = 4 / (1024 * 1024)
         calculator = DataSizeCalculator(sample_size, label_size)
         total_size = calculator.calculate_total_size(idxs)
-
-        if client_data_size is not None and total_size > client_data_size:
-            # 根据容量计算需要保留的数据个数
-            num_keep = int(client_data_size / (sample_size + label_size))
-            idxs = idxs[:num_keep]
+        
+        # fix: 不再截断多余数据，而是分片训练
+        # if client_data_size is not None and total_size > client_data_size:
+        #     # 根据容量计算需要保留的数据个数
+        #     num_keep = int(client_data_size / (sample_size + label_size))
+        #     idxs = idxs[:num_keep]
 
         self.ldr_train = DataLoader(DatasetSplit(dataset, idxs), batch_size=self.args.local_bs, shuffle=True)
 

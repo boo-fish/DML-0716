@@ -52,6 +52,8 @@ def args_parser():
     parser.add_argument('--total_slots', type=int, default=5, help='')
     parser.add_argument('--T', type=int, default=10, help='onlineFL : 10 or 20')
   
-
+    parser.add_argument('--A_min', type=int, default=30, help='设备数据到达率最小值')
+    parser.add_argument('--cap_min', type=int, default=20, help='链路容量最小值')
+    
     args = parser.parse_args()
     return args
