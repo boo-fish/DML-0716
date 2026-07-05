@@ -20,7 +20,7 @@ def get_real_flow_mb_in_t_time(total_slots=None, onlineFL_T=None,p_value=20):
     F_max = F_min * p_value  # F_max is determined by F_min and p_value 
     # A_min = 1
     # A_max = 3
-    A_min = 20
+    A_min = 40  # 20 -》 40 
     A_max = 80
     cap_min = 20
     cap_max = 100

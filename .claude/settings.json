@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ' *)",
+      "Bash(pip install *)",
+      "Bash(where pdftotext *)",
+      "Bash(pdftotext -layout \"paper/FedAvg.pdf\" \"paper/FedAvg_text.txt\")"
+    ]
+  }
+}
