@@ -212,8 +212,8 @@ def main():
         target_accuracy = 92.0  # mnist数据集目标准确率92%
         target_epoch = 50
     elif args.dataset == 'cifar10':
-        target_accuracy = 55.0  # cifar10数据集目标准确率55%
-        target_epoch = 100
+        target_accuracy = 75.0  # cifar10数据集目标准确率55%
+        target_epoch = 160
     else:
         target_accuracy = 0.0  # 未知数据集默认值
         print(f"警告：未识别的数据集 {args.dataset}，未设置目标准确率")
