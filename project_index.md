@@ -7,21 +7,24 @@
 - [docs/review_comments.md](docs/review_comments.md) — FGCS期刊审稿意见整理（英文原文 + 中文翻译，含汇总表）
 - [docs/review_classification.md](docs/review_classification.md) — 审稿意见分类标记（按6个工作量维度标记）
 - [docs/experiment_revision_order.md](docs/experiment_revision_order.md) — 实验修订顺序（6步，含依赖关系和预估时间线）
-- [docs/baseline_methods.md](docs/baseline_methods.md) — 基线方法说明文档（Local Training / Random Orchestration）
+- [docs/baseline_methods.md](docs/baseline_methods.md) — 基线方法说明文档（4个基线 + Proposed）
+- [docs/markov_robustness.md](docs/markov_robustness.md) — Markov鲁棒性实验说明（审稿意见1.12）
 - [docs/progress.md](docs/progress.md) — 项目进度记录
 
 ## 运行入口
 
-- [run_method.py](run_method.py) — Python 方法切换包装器（--method 参数动态导入对应 Step 1 模块）
+- [run_method.py](run_method.py) — Python 方法切换包装器（--method + --dynamics iid/markov）
+- [run_all_methods.py](run_all_methods.py) — 统一仿真引擎（支持全部5种方法 × 2种动态模型）
 
 ## 主脚本
 
 - [onlineFL_step1_全参数固定的仿真模板代码_用于获取每一time的实际训练量_FINAL.py](onlineFL_step1_全参数固定的仿真模板代码_用于获取每一time的实际训练量_FINAL.py) — Step 1: 全参数固定仿真，获取每time实际训练量（含 Proposed + Static + Local 基线）
 - [onlineFL_step2_Online_FL-FINAL.py](onlineFL_step2_Online_FL-FINAL.py) — Step 2: 在线FL编排主程序
-- [baseline_local_training.py](baseline_local_training.py) — 基线1: Local Training（随机工作者选择 + 无卸载）
-- [baseline_random_orchestration.py](baseline_random_orchestration.py) — 基线2: Random Orchestration（随机工作者选择 + Algorithm 1 卸载）
-- [baseline_weight_divergence.py](baseline_weight_divergence.py) — 基线3: Weight Divergence（文献[23] 聚类感知选择 + 卸载）
-- [baseline_greedy_capacity.py](baseline_greedy_capacity.py) — 基线4: Greedy Capacity（贪心容量选择 + 卸载）
+- [baseline_local_training.py](baseline_local_training.py) — 基线1: Local Training
+- [baseline_random_orchestration.py](baseline_random_orchestration.py) — 基线2: Random Orchestration
+- [baseline_weight_divergence.py](baseline_weight_divergence.py) — 基线3: Weight Divergence (文献[23])
+- [baseline_greedy_capacity.py](baseline_greedy_capacity.py) — 基线4: Greedy Capacity
+- [markov_dynamics.py](markov_dynamics.py) — Markov调制动态参数生成器（审稿意见1.12）
 
 ## 模型层 (models/)
 

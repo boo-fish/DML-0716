@@ -1,15 +1,18 @@
 """
-实验运行入口 — 支持不同方法切换
+实验运行入口 — 支持不同方法切换 × 不同动态模型
 
 用法:
-    python run_method.py --method proposed [其他参数...]
-    python run_method.py --method local_training [其他参数...]
-    python run_method.py --method random_orchestration [其他参数...]
+    python run_method.py --method proposed [--dynamics iid] [其余参数...]
+    python run_method.py --method proposed --dynamics markov [其余参数...]
+    python run_method.py --method local_training --dynamics markov ...
 
-方法说明:
-    proposed           — 本文方法 (BPSO优化选择 + Algorithm 1卸载)
-    local_training     — 基线1: 随机选择 + 无卸载
-    random_orchestration — 基线2: 随机选择 + Algorithm 1卸载
+方法 (--method):
+    proposed, local_training, random_orchestration,
+    weight_divergence, greedy_capacity
+
+动态模型 (--dynamics):
+    iid     — 原始 i.i.d. 随机变化 (默认)
+    markov  — 马尔可夫调制时间相关动态 (审稿意见 1.12)
 """
 
 import sys
@@ -26,39 +29,52 @@ METHOD_MAP = {
 }
 
 
-def parse_method(argv=None):
-    """从命令行参数中提取 --method，返回 (method_name, 剩余参数列表)"""
+def parse_args(argv=None):
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--method", type=str, default="proposed",
                         choices=list(METHOD_MAP.keys()),
                         help="选择运行方法")
+    parser.add_argument("--dynamics", type=str, default="iid",
+                        choices=["iid", "markov"],
+                        help="动态模型: iid (默认) / markov (时间相关)")
     args, remaining = parser.parse_known_args(argv)
-    return args.method, remaining
+    return args.method, args.dynamics, remaining
 
 
 def main():
-    # 1. 提取 --method 并保持其余参数原样传递给原 main
-    method_name, remaining_argv = parse_method()
+    method_name, dynamics, remaining_argv = parse_args()
 
     print(f"{'='*60}")
     print(f"  方法: {method_name}")
-    print(f"  模块: {METHOD_MAP[method_name]}")
+    print(f"  动态模型: {dynamics}")
     print(f"{'='*60}\n")
 
-    # 2. 动态导入对应的 get_real_flow_mb_in_t_time
-    module_name = METHOD_MAP[method_name]
-    step1_module = importlib.import_module(module_name)
-    get_flow = step1_module.get_real_flow_mb_in_t_time
+    if dynamics == "markov":
+        # 使用 run_all_methods 中的统一仿真引擎
+        import run_all_methods as ram
+        from run_all_methods import MarkovDynamicsWrapper
+        dyn_model = MarkovDynamicsWrapper(N=50, seed=42)
 
-    # 3. 动态导入 step2 模块（文件名含连字符，不能用 import 语句）
-    step2_module_name = "onlineFL_step2_Online_FL-FINAL"
-    step2 = importlib.import_module(step2_module_name)
-    step2.get_real_flow_mb_in_t_time = get_flow
+        def wrapped_get_flow(total_slots=None, onlineFL_T=None, p_value=20, A_min=30, cap_min=20):
+            return ram.get_real_flow_mb_in_t_time(
+                total_slots=total_slots, onlineFL_T=onlineFL_T,
+                p_value=p_value, A_min=A_min, cap_min=cap_min,
+                method=method_name, dynamics_model=dyn_model)
 
-    # 4. 将剩余参数写回 sys.argv 供 args_parser 解析
+        step2_module_name = "onlineFL_step2_Online_FL-FINAL"
+        step2 = importlib.import_module(step2_module_name)
+        step2.get_real_flow_mb_in_t_time = wrapped_get_flow
+    else:
+        # i.i.d. 模式：使用原有各方法独立脚本
+        module_name = METHOD_MAP[method_name]
+        step1_module = importlib.import_module(module_name)
+        get_flow = step1_module.get_real_flow_mb_in_t_time
+
+        step2_module_name = "onlineFL_step2_Online_FL-FINAL"
+        step2 = importlib.import_module(step2_module_name)
+        step2.get_real_flow_mb_in_t_time = get_flow
+
     sys.argv = [sys.argv[0]] + remaining_argv
-
-    # 5. 运行原 main
     step2.main()
 
 

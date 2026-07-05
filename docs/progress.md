@@ -11,7 +11,11 @@
 - ✅ 创建 `baseline_greedy_capacity.py`：基线4 Greedy Capacity（贪心容量打分选择 + LP卸载）
 - ✅ 更新 `run_method.py`：注册 weight_divergence / greedy_capacity 两种新方法
 - ✅ 更新 `docs/baseline_methods.md`：补充基线3、4的说明，更新对比表和运行命令
-- ✅ 现有共5种方法: proposed / local_training / random_orchestration / weight_divergence / greedy_capacity
+- ✅ 现有共5种方法 × 2种动态模型 = 10种组合
+- ✅ 审稿意见1.12: 创建 `markov_dynamics.py`（4组两状态Markov链，可配p_stay和乘子范围）
+- ✅ 创建 `run_all_methods.py`：统一仿真引擎（含所有方法选择策略 + i.i.d./Markov双模式）
+- ✅ 更新 `run_method.py`：新增 `--dynamics iid/markov` 参数
+- ✅ 创建 `docs/markov_robustness.md`：Markov鲁棒性实验说明（含运行命令、参数说明、回复建议）
 - ✅ 两个基线脚本输出格式与原 Step 1 脚本完全兼容，可直接替换 import 使用
 
 **数据信息**:
