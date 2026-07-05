@@ -18,8 +18,10 @@
 
 - [onlineFL_step1_全参数固定的仿真模板代码_用于获取每一time的实际训练量_FINAL.py](onlineFL_step1_全参数固定的仿真模板代码_用于获取每一time的实际训练量_FINAL.py) — Step 1: 全参数固定仿真，获取每time实际训练量（含 Proposed + Static + Local 基线）
 - [onlineFL_step2_Online_FL-FINAL.py](onlineFL_step2_Online_FL-FINAL.py) — Step 2: 在线FL编排主程序
-- [baseline_local_training.py](baseline_local_training.py) — 基线方法1: Local Training（随机工作者选择 + 无卸载）
-- [baseline_random_orchestration.py](baseline_random_orchestration.py) — 基线方法2: Random Orchestration（随机工作者选择 + Algorithm 1 卸载）
+- [baseline_local_training.py](baseline_local_training.py) — 基线1: Local Training（随机工作者选择 + 无卸载）
+- [baseline_random_orchestration.py](baseline_random_orchestration.py) — 基线2: Random Orchestration（随机工作者选择 + Algorithm 1 卸载）
+- [baseline_weight_divergence.py](baseline_weight_divergence.py) — 基线3: Weight Divergence（文献[23] 聚类感知选择 + 卸载）
+- [baseline_greedy_capacity.py](baseline_greedy_capacity.py) — 基线4: Greedy Capacity（贪心容量选择 + 卸载）
 
 ## 模型层 (models/)
 

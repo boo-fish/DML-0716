@@ -21,6 +21,8 @@ METHOD_MAP = {
     "proposed": "onlineFL_step1_全参数固定的仿真模板代码_用于获取每一time的实际训练量_FINAL",
     "local_training": "baseline_local_training",
     "random_orchestration": "baseline_random_orchestration",
+    "weight_divergence": "baseline_weight_divergence",
+    "greedy_capacity": "baseline_greedy_capacity",
 }
 
 

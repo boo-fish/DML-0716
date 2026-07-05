@@ -1,6 +1,6 @@
 # 基线方法说明文档
 
-本文实现了两个基线方法，用于与所提出的双时间尺度在线编排方法进行对比实验。所有方法通过 `run_method.py` 统一入口运行。
+针对审稿意见 1.4，本文实现了四个基线方法，用于与所提出的双时间尺度在线编排方法进行对比实验。所有方法通过 `run_method.py` 统一入口运行。
 
 ---
 
@@ -27,6 +27,20 @@ python run_method.py --method random_orchestration \
     --model vgg11 --total_slots 160 --T 10 --gpu 0 \
     --p 20 --alpha 1.0 --total_mb 586 \
     --lr 0.001 --local_bs 32
+
+# 基线3: Weight Divergence（文献[23] 聚类感知选择 + 卸载）
+python run_method.py --method weight_divergence \
+    --dataset cifar10 --num_classes 10 --num_channels 3 \
+    --model vgg11 --total_slots 160 --T 10 --gpu 0 \
+    --p 20 --alpha 1.0 --total_mb 586 \
+    --lr 0.001 --local_bs 32
+
+# 基线4: Greedy Capacity（贪心容量选择 + 卸载）
+python run_method.py --method greedy_capacity \
+    --dataset cifar10 --num_classes 10 --num_channels 3 \
+    --model vgg11 --total_slots 160 --T 10 --gpu 0 \
+    --p 20 --alpha 1.0 --total_mb 586 \
+    --lr 0.001 --local_bs 32
 ```
 
 `--method` 以外的所有参数均为原 `args_parser()` 支持的参数，完整透传。
@@ -35,14 +49,13 @@ python run_method.py --method random_orchestration \
 
 ## 基线方法对比
 
-| 维度 | Proposed (本文) | Baseline 1: Local Training | Baseline 2: Random Orchestration |
-|------|:--:|:--:|:--:|
-| 工作者选择 | BPSO 优化（每 T 时隙） | 随机（基于能量可用性） | **随机**（每 T 时隙） |
-| D2D 数据卸载 | Algorithm 1 流优化 | **无卸载** | Algorithm 1 流优化 |
-| 拉格朗日乘子更新 | SGD 更新 | 无 | SGD 更新 |
-| 能量约束 | 长期约束（拉格朗日） | 即时能量检查 | 长期约束（拉格朗日） |
-| 每设备训练数据 | 通过卸载路由的 final_data | Ai 原始本地数据 | 通过卸载路由的 final_data |
-| 对应文件 | `onlineFL_step1_..._FINAL.py` | `baseline_local_training.py` | `baseline_random_orchestration.py` |
+| 维度 | Proposed | B1: Local Training | B2: Random Orch. | B3: Weight Div. [23] | B4: Greedy Cap. |
+|------|:--:|:--:|:--:|:--:|:--:|
+| 工作者选择 | BPSO 优化 | 随机(能量) | 随机 | **聚类感知** | **贪心容量** |
+| D2D 卸载 | Algo.1 LP | 无 | Algo.1 LP | Algo.1 LP | Algo.1 LP |
+| 拉格朗日更新 | SGD | 无 | SGD | SGD | SGD |
+| 对应审稿意见 | — | 1.4 | 1.4 | **1.4 (文献[23])** | **1.4 (贪心)** |
+| 对应文件 | `onlineFL_step1_...` | `baseline_local_training.py` | `baseline_random_orchestration.py` | `baseline_weight_divergence.py` | `baseline_greedy_capacity.py` |
 
 ---
 
@@ -137,9 +150,81 @@ time_slot_results = get_real_flow_mb_in_t_time_rand(
 
 ---
 
+## Baseline 3: Weight Divergence (文献 [23] 方法)
+
+### 来源
+
+T. Zhang, K.-Y. Lam, J. Zhao, F. Li, H. Han, N. Jamil, "Enhancing Federated Learning with Spectrum Allocation Optimization and Device Selection," *International Conference on Learning Representations (ICLR)*, 2022.
+
+### 策略
+
+- **设备聚类**: 将设备按 non-IID 数据分布的主导类别分为 c=10 个聚类（模拟文献[23]的 K-means 聚类）
+- **工作者选择**: 每 T 时隙从**每个聚类中均匀选择** s = K/c 个设备（文献[23]的 Algorithm 3/4）
+- **数据卸载**: 保留 Algorithm 1 的 LP 流优化
+- **拉格朗日乘子**: 保留 SGD 更新
+
+### 核心逻辑
+
+```
+初始化:
+  1. 为每设备分配主导类别（模拟K-means聚类结果）
+  2. 将同主导类别的设备归入同一聚类
+
+每个时隙 t:
+  1. 每 T 时隙: 从每个聚类均匀选择 s = K/c 个设备
+  2. 构建残差图 → LP 求解(Algorithm 1)
+  3. 更新拉格朗日乘子 λ_i
+  4. 计算卸载量和最终数据分配
+```
+
+### 对应审稿意见
+
+- Comment 1.4: 已发表的 FL 客户端选择方法（文献[23]），基于聚类感知的设备选择
+
+### 使用方式
+
+```bash
+python run_method.py --method weight_divergence [其余参数...]
+```
+
+---
+
+## Baseline 4: Greedy Capacity（贪心容量启发式）
+
+### 策略
+
+- **工作者选择**: 每 T 时隙根据**贪心得分**选择 top-K 个设备
+  - 得分公式: `score_i = F_i(t) / e_device_i(t)` — 计算能力 / 单位能耗
+- **数据卸载**: 保留 Algorithm 1 的 LP 流优化
+- **拉格朗日乘子**: 保留 SGD 更新
+
+### 核心逻辑
+
+```
+每个时隙 t:
+  1. 每 T 时隙:
+     a. 计算贪心得分: score_i = F_i / e_device_i (∀i)
+     b. 按得分降序选择 top-K 个工作节点
+  2. 构建残差图 → LP 求解 (Algorithm 1)
+  3. 更新拉格朗日乘子 λ_i
+  4. 计算卸载量和最终数据分配
+```
+
+### 对应审稿意见
+
+- Comment 1.4: "one greedy capacity-based heuristic" 的直接实现
+
+### 使用方式
+
+```bash
+python run_method.py --method greedy_capacity [其余参数...]
+```
+
+---
+
 ## 输出格式
 
-两个基线脚本的 `get_real_flow_mb_in_t_time` 函数输出格式与原 Step 1 脚本完全一致：
+所有基线脚本的 `get_real_flow_mb_in_t_time` 函数输出格式与原 Step 1 脚本完全一致：
 
 ```python
 time_slot_results = [

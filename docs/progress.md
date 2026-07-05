@@ -7,7 +7,11 @@
 - ✅ 创建 `baseline_local_training.py`：Local Training 基线（随机工作者选择 + 无数据卸载）
 - ✅ 创建 `baseline_random_orchestration.py`：Random Orchestration 基线（随机工作者选择 + Algorithm 1 卸载）
 - ✅ 创建 `docs/baseline_methods.md`：基线方法说明文档（对比表、核心逻辑、使用方式）
-- ✅ 创建 `run_method.py`：Python 方法切换包装器（--method proposed / local_training / random_orchestration）
+- ✅ 创建 `baseline_weight_divergence.py`：基线3 Weight Divergence（文献[23] 聚类感知设备选择 + LP卸载）
+- ✅ 创建 `baseline_greedy_capacity.py`：基线4 Greedy Capacity（贪心容量打分选择 + LP卸载）
+- ✅ 更新 `run_method.py`：注册 weight_divergence / greedy_capacity 两种新方法
+- ✅ 更新 `docs/baseline_methods.md`：补充基线3、4的说明，更新对比表和运行命令
+- ✅ 现有共5种方法: proposed / local_training / random_orchestration / weight_divergence / greedy_capacity
 - ✅ 两个基线脚本输出格式与原 Step 1 脚本完全兼容，可直接替换 import 使用
 
 **数据信息**:
