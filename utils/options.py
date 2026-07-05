@@ -49,7 +49,7 @@ def args_parser():
 
     parser.add_argument('--total_mb', type=float, default=179, help='the MB of dataset, minist:179, cifar:586')
 
-    parser.add_argument('--total_slots', type=int, default=5, help='')
+    parser.add_argument('--total_slots', type=int, default=200, help='')
     parser.add_argument('--T', type=int, default=10, help='onlineFL : 10 or 20')
   
     parser.add_argument('--A_min', type=int, default=30, help='设备数据到达率最小值')

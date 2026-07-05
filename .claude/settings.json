@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la \"d:\\\\\\\\Desktop_workspace\\\\\\\\MUC\\\\\\\\研2\\\\\\\\其它\\\\\\\\A小艾工作2大修\\\\\\\\\")"
+    ]
+  }
+}
