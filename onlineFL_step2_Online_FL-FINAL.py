@@ -22,7 +22,6 @@ from models.Fed import FedAvg
 from models.test import test_img
 import math
 import pickle
-from multiprocessing import Pool
 import torch.multiprocessing as mp  # 导入多进程模块，用于并行训练
 from onlineFL_step1_全参数固定的仿真模板代码_用于获取每一time的实际训练量_FINAL import get_real_flow_mb_in_t_time
 
@@ -350,9 +349,15 @@ def main():
         idxs_users = selected_idx_in_time
         # print(f"Round {epoch + 1}, 工作节点：{idxs_users}")
 
-        with Pool(processes=len(idxs_users)) as pool:
+        # CUDA 不能在 fork 出来的子进程中重新初始化；run_method.py 以 import 方式调用本模块时，
+        # 文件底部的 set_start_method('spawn') 不会执行，因此这里显式使用 spawn 上下文创建进程池。
+        ctx = mp.get_context('spawn')
+        # 不把 CUDA 上的模型对象直接传给子进程，避免序列化 CUDA tensor 时触发 CUDA 重初始化问题。
+        # 子进程内部会再把 CPU 模型移动到 args.device。
+        net_glob_for_workers = copy.deepcopy(net_glob).cpu()
+        with ctx.Pool(processes=len(idxs_users)) as pool:
             results = pool.starmap(train_client_new_work2_mr, [
-                (args, dataset_train, dict_users, client_dataset_sizes, idx, net_glob, worker_capacity) for idx in
+                (args, dataset_train, dict_users, client_dataset_sizes, idx, net_glob_for_workers, worker_capacity) for idx in
                 idxs_users])
 
         # 存储每个客户端的处理时间

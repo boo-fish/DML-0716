@@ -46,7 +46,8 @@ def make_shared_params(p_value=20, A_min=30, cap_min=20):
     return {
         "N": 50, "R": 250, "Thre": 35, "K": 5,
         "F_min": 20, "F_max": 20 * p_value,
-        "A_max": 80, "cap_max": 100,
+        "A_min": A_min, "A_max": 80,
+        "cap_min": cap_min, "cap_max": 100,
         "e_link_min": 0.5, "e_link_max": 2,
         "e_worker_min": 40, "e_worker_max": 80,
         "E_device_min": 5, "E_device_max": 20,
@@ -74,7 +75,7 @@ def generate_devices(params, seed=42):
     e_dev = np.ones((N,1))*params["e_worker_min"] + rng.rand(N,1)*(params["e_worker_max"]-params["e_worker_min"])
 
     eps_link = (np.ones((N,N))*params["e_link_min"]+rng.rand(N,N)*(params["e_link_max"]-params["e_link_min"]))*Map*Amat
-    Cap = (np.ones((N,N))*cap_min+rng.rand(N,N)*(params["cap_max"]-cap_min))*Map
+    Cap = (np.ones((N,N))*params["cap_min"]+rng.rand(N,N)*(params["cap_max"]-params["cap_min"]))*Map
     Cap = np.tril(Cap,-1)+np.triu(Cap.T,0)
 
     dev_clusters = rng.randint(0, params["NUM_CLUSTERS"], size=N)
@@ -162,7 +163,7 @@ class MarkovDynamicsWrapper:
 # ============================================================
 
 def select_workers_proposed(s_t_prev, F_t, A_t, cap_t, e_device_t, e_link_t,
-                             lambda_val, E_t, Time, T, params, flow_temp_prev):
+                             lambda_val, E_t, Time, T, params, flow_temp_prev, **kwargs):
     """BPSO/MILP 优化选择 — 用贪心+LP近似 (与原 Step 1 一致)"""
     # 简化: 每T时隙用MILP近似，非T时隙保持s_t不变
     # 完整MILP实现在onlineFL_step1中，这里使用贪心+随机扰动近似
